@@ -423,14 +423,21 @@ const isSafeOutputSubdirectoryName = (name: string) => {
     Boolean(name) &&
     name !== '.' &&
     name !== '..' &&
+    !name.endsWith('.') &&
     !path.isAbsolute(name) &&
     !path.win32.isAbsolute(name) &&
-    !Array.from(name).some(isReservedOutputNameCharacter)
+    !Array.from(name).some(isReservedOutputNameCharacter) &&
+    !isReservedWin32OutputSubdirectoryName(name)
   );
 };
 
 const isReservedOutputNameCharacter = (char: string) => {
   return char.charCodeAt(0) <= 31 || '<>:"/\\|?*'.includes(char);
+};
+
+const win32ReservedOutputSubdirectoryNamePattern = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
+const isReservedWin32OutputSubdirectoryName = (name: string) => {
+  return win32ReservedOutputSubdirectoryNamePattern.test(name);
 };
 
 interface PreviewServerState {
