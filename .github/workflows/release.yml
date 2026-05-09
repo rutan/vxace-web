@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Create Release Pull Request or Publish to registries
+        id: changesets
+        uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
+        with:
+          publish: pnpm run release
+
+      - name: Check converter app release
+        id: converter_app
+        if: steps.changesets.outputs.published == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="$(node -p "require('./apps/converter-app/package.json').version")"
+          changed=false
+
+          if git rev-parse --verify "${{ github.event.before }}" >/dev/null 2>&1; then
+            if ! git diff --quiet "${{ github.event.before }}" HEAD -- apps/converter-app/package.json; then
+              changed=true
+            fi
+          else
+            changed=true
+          fi
+
+          {
+            echo "changed=${changed}"
+            echo "version=${version}"
+            echo "tag=rpgmaker-vxace-web-converter-app@${version}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build converter app distribution
+        if: steps.converter_app.outputs.changed == 'true'
+        run: pnpm --filter rpgmaker-vxace-web-converter-app run make
+
+      - name: Upload converter app to GitHub Release
+        if: steps.converter_app.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.converter_app.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.converter_app.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t assets < <(find apps/converter-app/out/make/zip/win32/x64 -type f -name '*.zip' | sort)
+
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "No converter app zip assets found." >&2
+            exit 1
+          fi
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
+          else
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
+              --target "$GITHUB_SHA" \
+              --title "Converter App v${RELEASE_VERSION}" \
+              --notes "Windows x64 zip build for Converter App v${RELEASE_VERSION}."
+          fi

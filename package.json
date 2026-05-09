@@ -11,9 +11,14 @@
     "lint:turbo": "turbo run lint",
     "format": "run-s format:*",
     "format:oxfmt": "oxfmt",
-    "format:turbo": "turbo run format"
+    "format:turbo": "turbo run format",
+    "release": "run-s build release:*",
+    "release:packages": "changeset publish",
+    "changeset": "changeset"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
     "@typescript/native-preview": "7.0.0-dev.20260427.1",

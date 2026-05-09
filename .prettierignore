@@ -4,3 +4,4 @@ dist
 /tmp
 pnpm-*.yaml
 manifest.json
+.changeset/*.md
