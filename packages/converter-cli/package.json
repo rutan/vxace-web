@@ -1,0 +1,61 @@
+{
+  "name": "@rutan/rpgmaker-vxace-web-converter-cli",
+  "version": "0.0.0",
+  "description": "Command-line converter for RPG Maker VX Ace Web.",
+  "keywords": [
+    "browser",
+    "cli",
+    "converter",
+    "rgss3",
+    "rpg-maker",
+    "rpg-maker-vx-ace",
+    "vxace",
+    "web"
+  ],
+  "homepage": "https://github.com/rutan/vxace-web/tree/main/packages/converter-cli#readme",
+  "bugs": {
+    "url": "https://github.com/rutan/vxace-web/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rutan/vxace-web.git",
+    "directory": "packages/converter-cli"
+  },
+  "bin": {
+    "vxace-web-convert": "./dist/index.mjs"
+  },
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts",
+    "lint": "run-s lint:*",
+    "lint:oxlint": "oxlint src tests --type-aware",
+    "lint:ts": "tsgo --noEmit",
+    "format": "run-s format:*",
+    "format:oxfmt": "oxfmt -c ../../.oxfmtrc.json",
+    "format:oxlint": "oxlint --fix",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rutan/rpgmaker-vxace-web-converter-core": "workspace:*",
+    "@rutan/rpgmaker-vxace-web-game-manifest": "workspace:*"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@10.33.1"
+}

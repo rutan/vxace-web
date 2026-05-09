@@ -1,0 +1,8 @@
+/node_modules
+/dist
+
+/public/game
+!/public/game/replace-me.txt
+
+playwright-report
+test-results

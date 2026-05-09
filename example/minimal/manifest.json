@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "id": "local:minimal",
+  "metadata": {
+    "title": "minimal",
+    "screen": {
+      "width": 544,
+      "height": 416
+    },
+    "input": {
+      "virtualGamepad": "none"
+    }
+  },
+  "resources": {
+    "data/actors": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Actors",
+        "data": {
+          "kind": "file",
+          "path": "Data/Actors.rvdata2"
+        }
+      }
+    ],
+    "data/animations": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Animations",
+        "data": {
+          "kind": "file",
+          "path": "Data/Animations.rvdata2"
+        }
+      }
+    ],
+    "data/armors": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Armors",
+        "data": {
+          "kind": "file",
+          "path": "Data/Armors.rvdata2"
+        }
+      }
+    ],
+    "data/classes": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Classes",
+        "data": {
+          "kind": "file",
+          "path": "Data/Classes.rvdata2"
+        }
+      }
+    ],
+    "data/commonevents": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/CommonEvents",
+        "data": {
+          "kind": "file",
+          "path": "Data/CommonEvents.rvdata2"
+        }
+      }
+    ],
+    "data/enemies": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Enemies",
+        "data": {
+          "kind": "file",
+          "path": "Data/Enemies.rvdata2"
+        }
+      }
+    ],
+    "data/items": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Items",
+        "data": {
+          "kind": "file",
+          "path": "Data/Items.rvdata2"
+        }
+      }
+    ],
+    "data/map001": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Map001",
+        "data": {
+          "kind": "file",
+          "path": "Data/Map001.rvdata2"
+        }
+      }
+    ],
+    "data/mapinfos": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/MapInfos",
+        "data": {
+          "kind": "file",
+          "path": "Data/MapInfos.rvdata2"
+        }
+      }
+    ],
+    "data/scripts": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Scripts",
+        "data": {
+          "kind": "file",
+          "path": "Data/Scripts.rvdata2"
+        }
+      }
+    ],
+    "data/skills": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Skills",
+        "data": {
+          "kind": "file",
+          "path": "Data/Skills.rvdata2"
+        }
+      }
+    ],
+    "data/states": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/States",
+        "data": {
+          "kind": "file",
+          "path": "Data/States.rvdata2"
+        }
+      }
+    ],
+    "data/system": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/System",
+        "data": {
+          "kind": "file",
+          "path": "Data/System.rvdata2"
+        }
+      }
+    ],
+    "data/tilesets": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Tilesets",
+        "data": {
+          "kind": "file",
+          "path": "Data/Tilesets.rvdata2"
+        }
+      }
+    ],
+    "data/troops": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Troops",
+        "data": {
+          "kind": "file",
+          "path": "Data/Troops.rvdata2"
+        }
+      }
+    ],
+    "data/weapons": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Weapons",
+        "data": {
+          "kind": "file",
+          "path": "Data/Weapons.rvdata2"
+        }
+      }
+    ],
+    "graphics/rutan": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/rutan",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/rutan.png"
+        }
+      }
+    ]
+  },
+  "packs": {},
+  "fonts": []
+}

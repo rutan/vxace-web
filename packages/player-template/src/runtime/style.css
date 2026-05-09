@@ -1,0 +1,346 @@
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+}
+
+#app {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.game-player {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.game-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: #000;
+  transform-origin: top left;
+  touch-action: none;
+}
+
+.game-screen canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.message-window {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  padding: 14px 16px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  background: rgba(18, 22, 30, 0.9);
+  color: #f6f3e8;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  font:
+    18px/1.45 'Hiragino Sans',
+    'Yu Gothic',
+    sans-serif;
+}
+
+.message-window[hidden] {
+  display: none;
+}
+
+.message-window__content {
+  white-space: pre-wrap;
+}
+
+.message-window__hint {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  text-align: right;
+}
+
+.runtime-error {
+  position: absolute;
+  inset: 12px;
+  padding: 14px 16px;
+  overflow: auto;
+  border: 2px solid rgba(255, 96, 96, 0.9);
+  background: rgba(24, 10, 12, 0.96);
+  color: #ffe2de;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  font:
+    13px/1.45 ui-monospace,
+    'SFMono-Regular',
+    Menlo,
+    monospace;
+}
+
+.runtime-error[hidden] {
+  display: none;
+}
+
+.runtime-error__title {
+  margin-bottom: 10px;
+  color: #ff8f84;
+  font-weight: 700;
+}
+
+.runtime-error__content {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.resource-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font:
+    700 15px/1.35 'Hiragino Sans',
+    'Yu Gothic',
+    sans-serif;
+  pointer-events: none;
+}
+
+.resource-loading[hidden] {
+  display: none;
+}
+
+.resource-loading__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 14px;
+  background: rgba(8, 8, 8, 0.72);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.resource-loading__spinner {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: resource-loading-spin 0.8s linear infinite;
+}
+
+.resource-loading__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes resource-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.resource-error {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  color: #f7f7f2;
+  text-align: center;
+  font:
+    19px/1.55 'Hiragino Sans',
+    'Yu Gothic',
+    sans-serif;
+}
+
+.resource-error[hidden] {
+  display: none;
+}
+
+.resource-error__inner {
+  position: relative;
+  width: 100%;
+  padding: 20px 0;
+  background: rgba(8, 8, 8, 0.72);
+}
+
+.resource-error__title {
+  color: #fff35a;
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.resource-error__content {
+  margin: 0.5em 0;
+  color: #ffffff;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.resource-error__retry {
+  cursor: pointer;
+  min-width: 138px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 0;
+  background: #222;
+  color: #ffffff;
+  font:
+    700 20px/1 system-ui,
+    sans-serif;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.resource-error__retry:active {
+  transform: translate(0, 1px);
+}
+
+.virtual-gamepad {
+  --gamepad-button-size: clamp(44px, 13vw, 52px);
+  --gamepad-step: var(--gamepad-button-size);
+  --gamepad-edge: max(20px, env(safe-area-inset-left));
+  --gamepad-bottom: max(18px, env(safe-area-inset-bottom));
+  --gamepad-dpad-left: var(--gamepad-edge);
+  --gamepad-dpad-bottom: var(--gamepad-bottom);
+  --gamepad-face-right: max(20px, env(safe-area-inset-right));
+  --gamepad-face-bottom: var(--gamepad-bottom);
+  position: fixed;
+  inset: auto 0 0;
+  height: calc(var(--gamepad-bottom) + var(--gamepad-button-size) + var(--gamepad-step) * 2 + 18px);
+  z-index: 5;
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.virtual-gamepad[hidden] {
+  display: none;
+}
+
+.virtual-gamepad button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--gamepad-button-size);
+  height: var(--gamepad-button-size);
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(18, 20, 26, 0.56);
+  color: rgba(255, 255, 255, 0.9);
+  font:
+    700 18px/1 system-ui,
+    sans-serif;
+  pointer-events: auto;
+  touch-action: none;
+  opacity: 0.5;
+}
+
+.virtual-gamepad button:active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.82);
+}
+
+.virtual-gamepad__dpad {
+  position: absolute;
+  left: var(--gamepad-dpad-left);
+  bottom: var(--gamepad-dpad-bottom);
+  width: calc(var(--gamepad-button-size) + var(--gamepad-step) * 2);
+  height: calc(var(--gamepad-button-size) + var(--gamepad-step) * 2);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.virtual-gamepad__dpad-button {
+  pointer-events: none;
+}
+
+.virtual-gamepad__dpad-button--up {
+  left: var(--gamepad-step);
+  bottom: calc(var(--gamepad-step) * 2);
+}
+
+.virtual-gamepad__dpad-button--left {
+  left: 0;
+  bottom: var(--gamepad-step);
+}
+
+.virtual-gamepad__dpad-button--right {
+  left: calc(var(--gamepad-step) * 2);
+  bottom: var(--gamepad-step);
+}
+
+.virtual-gamepad__dpad-button--down {
+  left: var(--gamepad-step);
+  bottom: 0;
+}
+
+.virtual-gamepad__shoulder--left {
+  left: 20px;
+  bottom: 180px;
+}
+
+.virtual-gamepad__shoulder--right {
+  right: 20px;
+  bottom: 180px;
+}
+
+.virtual-gamepad__face-button--x {
+  right: calc(var(--gamepad-face-right) + var(--gamepad-step) * 2);
+  bottom: calc(var(--gamepad-face-bottom) + var(--gamepad-step));
+}
+
+.virtual-gamepad__face-button--y {
+  right: calc(var(--gamepad-face-right) + var(--gamepad-step));
+  bottom: calc(var(--gamepad-face-bottom) + var(--gamepad-step) * 2);
+}
+
+.virtual-gamepad__face-button--b {
+  right: calc(var(--gamepad-face-right) + var(--gamepad-step));
+  bottom: var(--gamepad-face-bottom);
+}
+
+.virtual-gamepad__face-button--c {
+  right: var(--gamepad-face-right);
+  bottom: calc(var(--gamepad-face-bottom) + var(--gamepad-step));
+}
+
+.virtual-gamepad__face-button--a {
+  right: calc(var(--gamepad-face-right) + var(--gamepad-step) * 2.5);
+  bottom: calc(var(--gamepad-face-bottom) - 12px);
+}
+
+.virtual-gamepad__face-button--simple-b {
+  right: calc(var(--gamepad-face-right) + var(--gamepad-step));
+  bottom: calc(var(--gamepad-face-bottom) + 14px);
+}
+
+.virtual-gamepad__face-button--simple-c {
+  right: var(--gamepad-face-right);
+  bottom: calc(var(--gamepad-face-bottom) + var(--gamepad-step) + 14px);
+}

@@ -1,0 +1,6 @@
+dist
+**/dist
+/public
+/tmp
+pnpm-*.yaml
+manifest.json

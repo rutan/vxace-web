@@ -1,0 +1,9 @@
+/node_modules
+/dist
+/out
+
+/src/shared/i18n/i18n-react.tsx
+/src/shared/i18n/i18n-types.ts
+/src/shared/i18n/i18n-util.async.ts
+/src/shared/i18n/i18n-util.sync.ts
+/src/shared/i18n/i18n-util.ts

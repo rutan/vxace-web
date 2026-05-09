@@ -1,0 +1,550 @@
+{
+  "version": 1,
+  "id": "local:demo",
+  "metadata": {
+    "title": "VX Ace Web Demo",
+    "screen": {
+      "width": 544,
+      "height": 416
+    },
+    "input": {
+      "virtualGamepad": "normal"
+    }
+  },
+  "resources": {
+    "audio/bgm/airship": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/BGM/Airship",
+        "data": {
+          "kind": "file",
+          "path": "Audio/BGM/Airship.ogg"
+        }
+      }
+    ],
+    "audio/bgm/field1": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/BGM/Field1",
+        "data": {
+          "kind": "file",
+          "path": "Audio/BGM/Field1.ogg"
+        }
+      }
+    ],
+    "audio/bgm/ship": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/BGM/Ship",
+        "data": {
+          "kind": "file",
+          "path": "Audio/BGM/Ship.ogg"
+        }
+      }
+    ],
+    "audio/bgm/theme1": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/BGM/Theme1",
+        "data": {
+          "kind": "file",
+          "path": "Audio/BGM/Theme1.ogg"
+        }
+      }
+    ],
+    "audio/me/gameover1": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/ME/Gameover1",
+        "data": {
+          "kind": "file",
+          "path": "Audio/ME/Gameover1.ogg"
+        }
+      }
+    ],
+    "audio/me/victory1": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/ME/Victory1",
+        "data": {
+          "kind": "file",
+          "path": "Audio/ME/Victory1.ogg"
+        }
+      }
+    ],
+    "audio/se/buzzer1": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/SE/Buzzer1",
+        "data": {
+          "kind": "file",
+          "path": "Audio/SE/Buzzer1.ogg"
+        }
+      }
+    ],
+    "audio/se/cancel2": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/SE/Cancel2",
+        "data": {
+          "kind": "file",
+          "path": "Audio/SE/Cancel2.ogg"
+        }
+      }
+    ],
+    "audio/se/cursor2": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/SE/Cursor2",
+        "data": {
+          "kind": "file",
+          "path": "Audio/SE/Cursor2.ogg"
+        }
+      }
+    ],
+    "audio/se/decision3": [
+      {
+        "type": "audio",
+        "extension": "ogg",
+        "logicalPath": "Audio/SE/Decision3",
+        "data": {
+          "kind": "file",
+          "path": "Audio/SE/Decision3.ogg"
+        }
+      }
+    ],
+    "data/actors": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Actors",
+        "data": {
+          "kind": "file",
+          "path": "Data/Actors.rvdata2"
+        }
+      }
+    ],
+    "data/animations": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Animations",
+        "data": {
+          "kind": "file",
+          "path": "Data/Animations.rvdata2"
+        }
+      }
+    ],
+    "data/armors": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Armors",
+        "data": {
+          "kind": "file",
+          "path": "Data/Armors.rvdata2"
+        }
+      }
+    ],
+    "data/classes": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Classes",
+        "data": {
+          "kind": "file",
+          "path": "Data/Classes.rvdata2"
+        }
+      }
+    ],
+    "data/commonevents": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/CommonEvents",
+        "data": {
+          "kind": "file",
+          "path": "Data/CommonEvents.rvdata2"
+        }
+      }
+    ],
+    "data/enemies": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Enemies",
+        "data": {
+          "kind": "file",
+          "path": "Data/Enemies.rvdata2"
+        }
+      }
+    ],
+    "data/items": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Items",
+        "data": {
+          "kind": "file",
+          "path": "Data/Items.rvdata2"
+        }
+      }
+    ],
+    "data/map001": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Map001",
+        "data": {
+          "kind": "file",
+          "path": "Data/Map001.rvdata2"
+        }
+      }
+    ],
+    "data/mapinfos": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/MapInfos",
+        "data": {
+          "kind": "file",
+          "path": "Data/MapInfos.rvdata2"
+        }
+      }
+    ],
+    "data/scripts": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Scripts",
+        "data": {
+          "kind": "file",
+          "path": "Data/Scripts.rvdata2"
+        }
+      }
+    ],
+    "data/skills": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Skills",
+        "data": {
+          "kind": "file",
+          "path": "Data/Skills.rvdata2"
+        }
+      }
+    ],
+    "data/states": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/States",
+        "data": {
+          "kind": "file",
+          "path": "Data/States.rvdata2"
+        }
+      }
+    ],
+    "data/system": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/System",
+        "data": {
+          "kind": "file",
+          "path": "Data/System.rvdata2"
+        }
+      }
+    ],
+    "data/tilesets": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Tilesets",
+        "data": {
+          "kind": "file",
+          "path": "Data/Tilesets.rvdata2"
+        }
+      }
+    ],
+    "data/troops": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Troops",
+        "data": {
+          "kind": "file",
+          "path": "Data/Troops.rvdata2"
+        }
+      }
+    ],
+    "data/weapons": [
+      {
+        "type": "data",
+        "extension": "rvdata2",
+        "logicalPath": "Data/Weapons",
+        "data": {
+          "kind": "file",
+          "path": "Data/Weapons.rvdata2"
+        }
+      }
+    ],
+    "fonts/vl-gothic-regular": [
+      {
+        "type": "font",
+        "extension": "ttf",
+        "logicalPath": "Fonts/VL-Gothic-Regular",
+        "data": {
+          "kind": "file",
+          "path": "Fonts/VL-Gothic-Regular.ttf"
+        }
+      }
+    ],
+    "fonts/vl-pgothic-regular": [
+      {
+        "type": "font",
+        "extension": "ttf",
+        "logicalPath": "Fonts/VL-PGothic-Regular",
+        "data": {
+          "kind": "file",
+          "path": "Fonts/VL-PGothic-Regular.ttf"
+        }
+      }
+    ],
+    "game": [
+      {
+        "type": "file",
+        "extension": "ini",
+        "logicalPath": "Game",
+        "data": {
+          "kind": "file",
+          "path": "Game.ini"
+        }
+      }
+    ],
+    "graphics/animations/fire1": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Animations/Fire1",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Animations/Fire1.png"
+        }
+      }
+    ],
+    "graphics/battlebacks1/grassland": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Battlebacks1/Grassland",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Battlebacks1/Grassland.png"
+        }
+      }
+    ],
+    "graphics/battlebacks2/grassland": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Battlebacks2/Grassland",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Battlebacks2/Grassland.png"
+        }
+      }
+    ],
+    "graphics/battlers/slime": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Battlers/Slime",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Battlers/Slime.png"
+        }
+      }
+    ],
+    "graphics/characters/actor4": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Characters/Actor4",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Characters/Actor4.png"
+        }
+      }
+    ],
+    "graphics/faces/actor4": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Faces/Actor4",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Faces/Actor4.png"
+        }
+      }
+    ],
+    "graphics/system/balloon": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/System/Balloon",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/System/Balloon.png"
+        }
+      }
+    ],
+    "graphics/system/battlestart": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/System/BattleStart",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/System/BattleStart.png"
+        }
+      }
+    ],
+    "graphics/system/gameover": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/System/GameOver",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/System/GameOver.png"
+        }
+      }
+    ],
+    "graphics/system/iconset": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/System/IconSet",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/System/IconSet.png"
+        }
+      }
+    ],
+    "graphics/system/shadow": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/System/Shadow",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/System/Shadow.png"
+        }
+      }
+    ],
+    "graphics/system/window": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/System/Window",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/System/Window.png"
+        }
+      }
+    ],
+    "graphics/tilesets/world_a1": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Tilesets/World_A1",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Tilesets/World_A1.png"
+        }
+      }
+    ],
+    "graphics/tilesets/world_a2": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Tilesets/World_A2",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Tilesets/World_A2.png"
+        }
+      }
+    ],
+    "graphics/titles1/plain": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Titles1/Plain",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Titles1/Plain.png"
+        }
+      }
+    ],
+    "graphics/titles2/forest": [
+      {
+        "type": "image",
+        "extension": "png",
+        "logicalPath": "Graphics/Titles2/Forest",
+        "data": {
+          "kind": "file",
+          "path": "Graphics/Titles2/Forest.png"
+        }
+      }
+    ]
+  },
+  "packs": {},
+  "fonts": [
+    {
+      "data": {
+        "kind": "file",
+        "path": "Fonts/VL-Gothic-Regular.ttf"
+      },
+      "extension": "ttf",
+      "families": [
+        "VL Gothic",
+        "VL Gothic Regular",
+        "VL-Gothic",
+        "VL-Gothic-Regular",
+        "VLGothic",
+        "VLGothicRegular"
+      ],
+      "style": "normal",
+      "weight": "400"
+    },
+    {
+      "data": {
+        "kind": "file",
+        "path": "Fonts/VL-PGothic-Regular.ttf"
+      },
+      "extension": "ttf",
+      "families": [
+        "VL P Gothic",
+        "VL P Gothic Regular",
+        "VL PGothic",
+        "VL PGothic Regular",
+        "VL-PGothic",
+        "VL-PGothic-Regular",
+        "VLPGothic",
+        "VLPGothicRegular"
+      ],
+      "style": "normal",
+      "weight": "400"
+    }
+  ]
+}
