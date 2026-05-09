@@ -129,7 +129,7 @@ export const createOutputSubdirectoryName = (value: string): string => {
 
   if (!normalized || normalized === '.' || normalized === '..') return 'game';
 
-  return normalized.slice(0, 80);
+  return Array.from(normalized).slice(0, 80).join('');
 };
 
 const isReservedOutputNameCharacter = (char: string) => {
