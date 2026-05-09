@@ -146,6 +146,7 @@ const en = {
     omittedFiles: 'Excluded files',
     omittedReasonSourceFile: 'Source file',
     omittedReasonUnusedAsset: 'Unused asset',
+    output: 'Output',
     source: 'Source',
     successTitle: 'Conversion complete!',
   },

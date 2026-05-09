@@ -146,6 +146,7 @@ const ja = {
     omittedFiles: '除外ファイル',
     omittedReasonSourceFile: '変換元ファイル',
     omittedReasonUnusedAsset: '未使用アセット',
+    output: '出力先',
     source: '変換元',
     successTitle: '変換が完了しました！',
   },
