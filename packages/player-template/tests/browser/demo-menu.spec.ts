@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
 import {
-  clickGameCanvas,
   expectNoRuntimeError,
+  focusGameCanvas,
   loadGame,
   readAppDebugSnapshot,
+  returnToTitleFromMapMenu,
+  startNewGame,
   tapKey,
-  waitForTilemap,
   waitForVisibleWindow,
 } from './helpers';
 
@@ -25,16 +26,12 @@ test.describe('demo menu flow', () => {
 
     await loadGame(page, { gameDir: 'demo', settleMs: 3000, canvasTimeout: 20_000 });
 
-    await clickGameCanvas(page);
-    await tapKey(page, 'Enter');
-
-    await page.waitForTimeout(500);
-    await waitForTilemap(page);
+    await startNewGame(page);
 
     await page.waitForTimeout(1000);
     const beforeMenu = await readSnapshot();
 
-    await clickGameCanvas(page);
+    await focusGameCanvas(page);
     await tapKey(page, 'x');
     await page.waitForTimeout(500);
 
@@ -75,30 +72,13 @@ test.describe('demo menu flow', () => {
 
     await loadGame(page, { gameDir: 'demo', settleMs: 3000, canvasTimeout: 20_000 });
 
-    await clickGameCanvas(page);
-    await tapKey(page, 'Enter');
-    await waitForTilemap(page);
+    await startNewGame(page);
     await page.waitForTimeout(1000);
 
-    await clickGameCanvas(page);
-    await tapKey(page, 'x');
-    await waitForVisibleWindow(page);
-    for (let index = 0; index < 5; index += 1) {
-      await tapKey(page, 'ArrowDown', { beforeUpDelay: 60, afterUpDelay: 80 });
-    }
-    await tapKey(page, 'Enter');
-    await page.waitForTimeout(1000);
-    await waitForVisibleWindow(page);
-    await tapKey(page, 'Enter');
-
-    await expect
-      .poll(async () => {
-        const snapshot = await readSnapshot();
-        return snapshot.runtimeErrorOpen ? -1 : snapshot.tilemapCount;
-      })
-      .toBe(0);
+    await returnToTitleFromMapMenu(page);
 
     const titleSnapshot = await readSnapshot();
+    expect(titleSnapshot.tilemapCount).toBe(0);
     expect(titleSnapshot.windowCount).toBeGreaterThanOrEqual(1);
 
     const averageBrightness = await page.evaluate(() => {

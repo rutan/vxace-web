@@ -64,7 +64,7 @@ PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 pnpm --filter @rutan/rpgmaker-vxace-we
 3. title boot 後に `.runtime-error` が出ていない
 4. `Enter` で `New Game` 相当の入力を送ったあとも `.runtime-error` が出ていない
 
-失敗時は trace / screenshot / video を `test-results/` に残す。
+失敗時は trace / screenshot を `test-results/` に残す。ローカル実行では video も残すが、CI では安定性を優先して video 記録を無効にしている。
 
 ## 実装方針
 

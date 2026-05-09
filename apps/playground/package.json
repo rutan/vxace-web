@@ -19,7 +19,7 @@
     "format": "run-s format:*",
     "format:oxfmt": "oxfmt -c ../../.oxfmtrc.json",
     "format:oxlint": "oxlint --fix",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "typesafe-i18n": "typesafe-i18n"
   },

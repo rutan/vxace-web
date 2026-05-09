@@ -1,12 +1,5 @@
 import { expect, test } from '@playwright/test';
-import {
-  clickGameCanvas,
-  expectNoRuntimeError,
-  loadGame,
-  readAppDebugSnapshot,
-  tapKey,
-  waitForTilemap,
-} from './helpers';
+import { expectNoRuntimeError, loadGame, readAppDebugSnapshot, startNewGame, tapKey } from './helpers';
 
 type AppDebugSnapshot = {
   runtimeErrorOpen: boolean;
@@ -23,11 +16,7 @@ test.describe('demo equip flow', () => {
 
     await loadGame(page, { gameDir: 'demo', settleMs: 3000, canvasTimeout: 20_000 });
 
-    await clickGameCanvas(page);
-    await tapKey(page, 'Enter');
-
-    await page.waitForTimeout(500);
-    await waitForTilemap(page);
+    await startNewGame(page);
 
     await tapKey(page, 'x');
     await expectNoRuntimeError(page);

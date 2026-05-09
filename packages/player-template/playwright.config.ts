@@ -4,13 +4,14 @@ import { defineConfig, devices } from '@playwright/test';
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const testPort = externalBaseURL ? null : await resolveTestPort();
 const baseURL = externalBaseURL ?? `http://127.0.0.1:${testPort}`;
+const isCI = process.env.CI === 'true';
 
 export default defineConfig({
   testDir: './tests/browser',
-  workers: 4,
-  timeout: 30_000,
+  workers: isCI ? 1 : 4,
+  timeout: isCI ? 90_000 : 30_000,
   expect: {
-    timeout: 10_000,
+    timeout: isCI ? 20_000 : 10_000,
   },
   outputDir: 'test-results/playwright',
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
@@ -18,7 +19,7 @@ export default defineConfig({
     baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: isCI ? 'off' : 'retain-on-failure',
     viewport: {
       width: 1280,
       height: 900,
@@ -39,7 +40,7 @@ export default defineConfig({
         command: `pnpm exec vite --host 127.0.0.1 --port ${testPort} --strictPort`,
         url: baseURL,
         reuseExistingServer: false,
-        timeout: 120_000,
+        timeout: isCI ? 180_000 : 120_000,
       },
 });
 

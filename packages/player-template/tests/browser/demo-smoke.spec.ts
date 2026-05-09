@@ -1,13 +1,5 @@
 import { expect, test } from '@playwright/test';
-import {
-  expectNoRuntimeError,
-  focusGameCanvas,
-  loadGame,
-  readAppDebugSnapshot,
-  readRuntimeError,
-  tapKey,
-  waitForTilemap,
-} from './helpers';
+import { expectNoRuntimeError, loadGame, readAppDebugSnapshot, readRuntimeError, startNewGame } from './helpers';
 
 type AppDebugSnapshot = {
   bitmapCount: number;
@@ -58,24 +50,14 @@ test.describe('demo boot smoke', () => {
       contentType: 'application/json',
     });
 
-    await focusGameCanvas(page);
-    let duringInputSnapshot: AppDebugSnapshot | null = null;
-    await tapKey(page, 'Enter', {
-      afterUpDelay: 0,
-      whileDown: async () => {
-        duringInputSnapshot = await readSnapshot();
-        await testInfo.attach('during-input-snapshot', {
-          body: Buffer.from(JSON.stringify(duringInputSnapshot, null, 2)),
-          contentType: 'application/json',
-        });
-      },
-    });
-    const afterInputSnapshot = await readSnapshot();
-    await testInfo.attach('after-input-snapshot', {
-      body: Buffer.from(JSON.stringify(afterInputSnapshot, null, 2)),
+    await startNewGame(page);
+
+    const afterStartSnapshot = await readSnapshot();
+    await testInfo.attach('after-start-snapshot', {
+      body: Buffer.from(JSON.stringify(afterStartSnapshot, null, 2)),
       contentType: 'application/json',
     });
-    if (afterInputSnapshot.runtimeErrorOpen) {
+    if (afterStartSnapshot.runtimeErrorOpen) {
       await testInfo.attach('runtime-error', {
         body: Buffer.from(await readRuntimeError(page)),
         contentType: 'text/plain',
@@ -87,7 +69,6 @@ test.describe('demo boot smoke', () => {
         contentType: 'text/plain',
       });
     }
-    await waitForTilemap(page);
     await expectNoRuntimeError(page);
     const mapSnapshot = await readSnapshot();
     expect(mapSnapshot.runtimeErrorOpen).toBe(false);

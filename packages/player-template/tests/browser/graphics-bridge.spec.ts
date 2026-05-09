@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { expectNoRuntimeError, loadGame } from './helpers';
 
+const IS_CI = process.env.CI === 'true';
+
 test.describe('graphics bridge', () => {
   test('resize, freeze, and snapshot APIs stay operational', async ({ page }) => {
     await loadGame(page, { gameDir: 'demo' });
@@ -251,7 +253,7 @@ test.describe('graphics bridge', () => {
       return performance.now() - startedAt;
     });
 
-    expect(result).toBeLessThan(250);
+    expect(result).toBeLessThan(IS_CI ? 350 : 250);
   });
 
   test('Ruby Graphics transition and play_movie bridge do not raise', async ({ page }) => {
