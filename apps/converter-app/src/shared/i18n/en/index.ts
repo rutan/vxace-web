@@ -58,6 +58,10 @@ const en = {
       outDir: {
         required: 'Select an output folder.',
       },
+      outputSubdirectoryName: {
+        invalid: 'The output folder name is invalid.',
+        required: 'Enter the folder name to create.',
+      },
       packAssets: {
         invalid: 'The asset packing setting is invalid.',
       },
@@ -154,7 +158,11 @@ const en = {
       warning: 'Changing this ID after publishing the game prevents existing save data from carrying over.',
     },
     output: {
+      actualDirectoryLabel: 'Actual output folder:',
       description: 'Select the folder where the converted web publishing files will be written.',
+      parentDirectoryLabel: 'Parent folder',
+      subdirectoryNameLabel: 'Folder name to create',
+      subdirectoryNamePlaceholder: 'Example Game',
       title: 'Select output destination',
     },
     placeholder: {

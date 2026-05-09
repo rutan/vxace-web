@@ -5,7 +5,13 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { App } from '../../src/renderer/src/App';
 import { changeAppLanguage } from '../../src/renderer/src/i18n';
-import { appErrorCodes, createInitialDraft, type AppErrorPayload, type Draft } from '../../src/shared';
+import {
+  appErrorCodes,
+  createInitialDraft,
+  createOutputSubdirectoryName,
+  type AppErrorPayload,
+  type Draft,
+} from '../../src/shared';
 import type { ConversionSummary, ConverterApi } from '../../src/shared/converterApi';
 
 type ReactActGlobal = typeof globalThis & {
@@ -81,6 +87,31 @@ describe('App', () => {
     });
 
     expect(container.textContent).toContain('Select a game to convert');
+  });
+
+  test('outputs into a required subdirectory under the selected folder', async () => {
+    window.vxaceConverter = {
+      ...createConverterApiStub(),
+      selectGameDirectory: async () => ({
+        canceled: false,
+        path: '/tmp/source',
+      }),
+      selectOutputDirectory: async () => ({
+        canceled: false,
+        path: '/tmp/output',
+      }),
+    };
+    await renderApp();
+
+    await act(async () => {
+      clickByTestId('select-game-directory');
+    });
+    await act(async () => {
+      clickByTestId('select-output-directory');
+    });
+
+    expect(getByTestId<HTMLInputElement>('output-subdirectory-name-input').value).toBe('Example Game');
+    expect(container.textContent).toContain('/tmp/output/Example Game');
   });
 
   test('resets input state from the app menu event', async () => {
@@ -366,7 +397,7 @@ describe('App', () => {
       clickByTestId('start-preview');
     });
 
-    expect(previewRootDir).toBe('/tmp/output');
+    expect(previewRootDir).toBe('/tmp/output/Example Game');
     expect(container.textContent).toContain('http://127.0.0.1:49152/');
     expect(container.textContent).toContain('ブラウザを開く');
     expect(container.textContent).toContain('プレビューを終了する');
@@ -601,9 +632,13 @@ const createAppError = (code: AppErrorPayload['code'], message?: string): AppErr
 };
 
 const createDraft = (patch: Partial<Draft> = {}): Draft => {
+  const outputSubdirectoryName =
+    patch.outputSubdirectoryName ?? (patch.title ? createOutputSubdirectoryName(patch.title) : undefined);
+
   return {
     ...createInitialDraft(),
     ...patch,
+    ...(outputSubdirectoryName === undefined ? {} : { outputSubdirectoryName }),
     screen: {
       ...createInitialDraft().screen,
       ...patch.screen,

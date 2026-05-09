@@ -1,6 +1,6 @@
 import { VirtualGamepadMode } from '@rutan/rpgmaker-vxace-web-game-manifest';
 import { Rocket } from 'lucide-react';
-import { AppErrorPayload, Draft } from '../../../shared';
+import { AppErrorPayload, Draft, createOutputSubdirectoryName, getDraftOutputDirectory } from '../../../shared';
 import type { TranslationFunctions } from '../../../shared/i18n/i18n-types.js';
 import { translateAppError } from '../appError';
 import type { DraftPatch } from '../hooks';
@@ -82,6 +82,18 @@ export const ConversionSettingsScreen = ({
   onToggleAdvancedSettings,
 }: ConversionSettingsScreenProps) => {
   const { LL } = useI18nContext();
+  const hasOutputDestination = Boolean(draft.outDir && draft.outputSubdirectoryName.trim());
+  const actualOutputDirectory = getDraftOutputDirectory(draft);
+  const changeTitle = (title: string) => {
+    const currentDefaultOutputSubdirectoryName = createOutputSubdirectoryName(draft.title);
+    const shouldUpdateOutputSubdirectoryName =
+      !draft.outputSubdirectoryName.trim() || draft.outputSubdirectoryName === currentDefaultOutputSubdirectoryName;
+
+    onPatchDraft({
+      title,
+      ...(shouldUpdateOutputSubdirectoryName ? { outputSubdirectoryName: createOutputSubdirectoryName(title) } : {}),
+    });
+  };
 
   return (
     <>
@@ -124,16 +136,35 @@ export const ConversionSettingsScreen = ({
           step="2"
           testId="output-step"
           title={LL.settings.output.title()}
-          status={draft.outDir ? 'complete' : draft.srcDir && !gameDirectoryError ? 'active' : 'pending'}
+          status={hasOutputDestination ? 'complete' : draft.srcDir && !gameDirectoryError ? 'active' : 'pending'}
         >
           <DirectoryField
             actionLabel={LL.actions.browseFolder()}
             actionTestId="select-output-directory"
+            label={LL.settings.output.parentDirectoryLabel()}
             onAction={onSelectOutputDirectory}
             pathValue={draft.outDir}
             placeholder={LL.settings.placeholder.noSelection()}
             disabled={busy || !converterApiAvailable}
           />
+          <label className="grid gap-1.5">
+            <span className="text-sm font-semibold text-slate-800">{LL.settings.output.subdirectoryNameLabel()}</span>
+            <input
+              className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#23527d] focus:ring-2 focus:ring-[#23527d]/20"
+              data-testid="output-subdirectory-name-input"
+              disabled={busy || !converterApiAvailable}
+              onChange={(event) => onPatchDraft({ outputSubdirectoryName: event.target.value })}
+              placeholder={LL.settings.output.subdirectoryNamePlaceholder()}
+              type="text"
+              value={draft.outputSubdirectoryName}
+            />
+          </label>
+          {actualOutputDirectory ? (
+            <p className="rounded-md bg-slate-100 px-3 py-2 text-xs text-slate-700">
+              <span className="font-semibold">{LL.settings.output.actualDirectoryLabel()}</span>{' '}
+              <span className="break-all font-mono">{actualOutputDirectory}</span>
+            </p>
+          ) : null}
           <label className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
             <input
               checked={draft.cleanOutDir}
@@ -163,7 +194,7 @@ export const ConversionSettingsScreen = ({
             <input
               className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-[#23527d] focus:ring-2 focus:ring-[#23527d]/20"
               data-testid="game-title-input"
-              onChange={(event) => onPatchDraft({ title: event.target.value })}
+              onChange={(event) => changeTitle(event.target.value)}
               placeholder={LL.settings.placeholder.title()}
               type="text"
               value={draft.title}

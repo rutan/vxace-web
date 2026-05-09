@@ -1,6 +1,8 @@
 export const appErrorCodes = {
   draftSrcDirRequired: 'draft.srcDir.required',
   draftOutDirRequired: 'draft.outDir.required',
+  draftOutputSubdirectoryNameRequired: 'draft.outputSubdirectoryName.required',
+  draftOutputSubdirectoryNameInvalid: 'draft.outputSubdirectoryName.invalid',
   draftTitleRequired: 'draft.title.required',
   draftGameIdInvalid: 'draft.gameId.invalid',
   draftScreenInvalid: 'draft.screen.invalid',
