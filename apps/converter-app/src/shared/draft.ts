@@ -4,6 +4,7 @@ import { appErrorCodes } from './appError';
 const GAME_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const GAME_DIRECTORY_REQUIRED_MESSAGE = appErrorCodes.draftSrcDirRequired;
 const OUTPUT_DIRECTORY_REQUIRED_MESSAGE = appErrorCodes.draftOutDirRequired;
+const OUTPUT_SUBDIRECTORY_NAME_MESSAGE = appErrorCodes.draftOutputSubdirectoryNameInvalid;
 const TITLE_REQUIRED_MESSAGE = appErrorCodes.draftTitleRequired;
 const GAME_ID_MESSAGE = appErrorCodes.draftGameIdInvalid;
 const SCREEN_MESSAGE = appErrorCodes.draftScreenInvalid;
@@ -41,6 +42,7 @@ export const conversionVirtualGamepadModeSchema = v.union(
 export const draftSchema = v.object({
   srcDir: v.string(),
   outDir: v.string(),
+  outputSubdirectoryName: v.string(OUTPUT_SUBDIRECTORY_NAME_MESSAGE),
   gameId: v.string(),
   title: v.string(),
   screen: v.object({
@@ -65,6 +67,7 @@ export type Draft = v.InferInput<typeof draftSchema>;
 export const conversionDraftSchema = v.object({
   srcDir: requiredTrimmedStringSchema(GAME_DIRECTORY_REQUIRED_MESSAGE),
   outDir: requiredTrimmedStringSchema(OUTPUT_DIRECTORY_REQUIRED_MESSAGE),
+  outputSubdirectoryName: v.pipe(v.string(OUTPUT_SUBDIRECTORY_NAME_MESSAGE), v.trim()),
   gameId: v.pipe(v.string(GAME_ID_MESSAGE), v.trim(), v.regex(GAME_ID_PATTERN, GAME_ID_MESSAGE)),
   title: requiredTrimmedStringSchema(TITLE_REQUIRED_MESSAGE),
   screen: v.object({
@@ -96,6 +99,7 @@ export const createInitialDraft = (): Draft => {
   return {
     srcDir: '',
     outDir: '',
+    outputSubdirectoryName: '',
     title: '',
     gameId: '',
     screen: {
@@ -112,4 +116,33 @@ export const createInitialDraft = (): Draft => {
     packAssets: false,
     cleanOutDir: false,
   };
+};
+
+export const createOutputSubdirectoryName = (value: string): string => {
+  const normalized = Array.from(value.trim(), (char) => {
+    return isReservedOutputNameCharacter(char) ? '-' : char;
+  })
+    .join('')
+    .replace(/\s+/g, ' ')
+    .replace(/[. ]+$/g, '')
+    .trim();
+
+  if (!normalized || normalized === '.' || normalized === '..') return 'game';
+
+  return Array.from(normalized).slice(0, 80).join('');
+};
+
+const isReservedOutputNameCharacter = (char: string) => {
+  return char.charCodeAt(0) <= 31 || '<>:"/\\|?*'.includes(char);
+};
+
+export const getDraftOutputDirectory = (draft: Pick<Draft, 'outDir' | 'outputSubdirectoryName'>) => {
+  const outDir = draft.outDir.trim();
+  if (!outDir) return '';
+
+  const subdirectoryName = draft.outputSubdirectoryName.trim();
+  if (!subdirectoryName) return '';
+
+  const separator = outDir.includes('\\') && !outDir.includes('/') ? '\\' : '/';
+  return `${outDir.replace(/[\\/]+$/g, '')}${separator}${subdirectoryName.replace(/^[\\/]+/g, '')}`;
 };

@@ -246,7 +246,7 @@ ipcMain.handle(converterChannels.convertGame, async (_event, input: unknown): Pr
     const draft = parseConversionDraft(input);
 
     const srcDir = path.resolve(draft.srcDir);
-    const outDir = path.resolve(draft.outDir);
+    const outDir = resolveConversionOutputDirectory(draft);
     const excludeSourceFilePatterns = draft.excludeSourceFilePatterns.filter(Boolean);
     const unusedAssetKeepPatterns = draft.keepUnusedAssetsPatterns.filter(Boolean);
     const injectHtmlFilePaths = draft.injectHtmlFilePaths.filter(Boolean);
@@ -400,7 +400,44 @@ const parseConversionDraft = (input: unknown): ConversionDraft => {
     throw new CodedAppError(isAppErrorCode(message) ? message : appErrorCodes.unknown, message);
   }
 
-  return parsed.output;
+  const draft = parsed.output;
+  if (!draft.outputSubdirectoryName) {
+    throw new CodedAppError(appErrorCodes.draftOutputSubdirectoryNameRequired);
+  }
+
+  return draft;
+};
+
+const resolveConversionOutputDirectory = (draft: ConversionDraft) => {
+  const outDir = path.resolve(draft.outDir);
+  const subdirectoryName = draft.outputSubdirectoryName.trim();
+  if (!isSafeOutputSubdirectoryName(subdirectoryName)) {
+    throw new CodedAppError(appErrorCodes.draftOutputSubdirectoryNameInvalid);
+  }
+
+  return path.resolve(outDir, subdirectoryName);
+};
+
+const isSafeOutputSubdirectoryName = (name: string) => {
+  return (
+    Boolean(name) &&
+    name !== '.' &&
+    name !== '..' &&
+    !name.endsWith('.') &&
+    !path.isAbsolute(name) &&
+    !path.win32.isAbsolute(name) &&
+    !Array.from(name).some(isReservedOutputNameCharacter) &&
+    !isReservedWin32OutputSubdirectoryName(name)
+  );
+};
+
+const isReservedOutputNameCharacter = (char: string) => {
+  return char.charCodeAt(0) <= 31 || '<>:"/\\|?*'.includes(char);
+};
+
+const win32ReservedOutputSubdirectoryNamePattern = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
+const isReservedWin32OutputSubdirectoryName = (name: string) => {
+  return win32ReservedOutputSubdirectoryNamePattern.test(name);
 };
 
 interface PreviewServerState {

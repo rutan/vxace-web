@@ -170,7 +170,7 @@ const ConversionResult = ({ summary }: { summary: ConversionSummary }) => {
         <SummaryItem label={LL.settings.title.label()} value={summary.title} />
         <SummaryItem label={LL.settings.gameId.label()} value={summary.gameId} mono />
         <SummaryItem label={LL.result.source()} value={summary.source} />
-        <SummaryItem label={LL.settings.output.title()} value={summary.output} />
+        <SummaryItem label={LL.result.output()} value={summary.output} />
       </dl>
 
       <ConvertedFileList files={summary.convertedFiles} />

@@ -1,6 +1,13 @@
 import * as v from 'valibot';
 import { describe, expect, test } from 'vitest';
-import { appErrorCodes, conversionDraftSchema, createInitialDraft, draftSchema } from '../../src/shared';
+import {
+  appErrorCodes,
+  conversionDraftSchema,
+  createInitialDraft,
+  createOutputSubdirectoryName,
+  draftSchema,
+  getDraftOutputDirectory,
+} from '../../src/shared';
 
 describe('draftSchema', () => {
   test('allows editable empty values', () => {
@@ -36,6 +43,7 @@ describe('conversionDraftSchema', () => {
       ...createInitialDraft(),
       srcDir: ' /tmp/source ',
       outDir: ' /tmp/output ',
+      outputSubdirectoryName: ' Example Game ',
       title: ' Example Game ',
       gameId: ' vxace:example ',
       screen: {
@@ -52,6 +60,7 @@ describe('conversionDraftSchema', () => {
     expect(parsed.output).toMatchObject({
       srcDir: '/tmp/source',
       outDir: '/tmp/output',
+      outputSubdirectoryName: 'Example Game',
       title: 'Example Game',
       gameId: 'vxace:example',
       excludeSourceFilePatterns: ['Save*.rvdata2', ''],
@@ -69,5 +78,22 @@ describe('conversionDraftSchema', () => {
     expect(parsed.success).toBe(false);
     if (parsed.success) return;
     expect(parsed.issues[0].message).toBe(appErrorCodes.draftSrcDirRequired);
+  });
+});
+
+describe('output directory helpers', () => {
+  test('creates safe default folder names from game titles', () => {
+    expect(createOutputSubdirectoryName(' Example: Game / Demo ')).toBe('Example- Game - Demo');
+    expect(createOutputSubdirectoryName('...')).toBe('game');
+  });
+
+  test('builds the displayed output directory from the parent folder and folder name', () => {
+    expect(
+      getDraftOutputDirectory({
+        ...createInitialDraft(),
+        outDir: '/tmp/output',
+        outputSubdirectoryName: 'Example Game',
+      }),
+    ).toBe('/tmp/output/Example Game');
   });
 });

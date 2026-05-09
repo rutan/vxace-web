@@ -1,6 +1,12 @@
 import './styles.css';
 import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
-import type { AppErrorPayload, ConversionSummary, Draft } from '../../shared';
+import {
+  createOutputSubdirectoryName,
+  getDraftOutputDirectory,
+  type AppErrorPayload,
+  type ConversionSummary,
+  type Draft,
+} from '../../shared';
 import {
   ConversionProgressScreen,
   ConversionResultScreen,
@@ -39,10 +45,12 @@ function AppContent(): JSX.Element {
   const [previewBusy, setPreviewBusy] = useState(false);
   const [draftPersistenceReady, setDraftPersistenceReady] = useState(false);
 
+  const actualOutputDirectory = getDraftOutputDirectory(draft);
   const canConvert = Boolean(
     converterApi &&
     draft.srcDir &&
     draft.outDir &&
+    draft.outputSubdirectoryName.trim() &&
     draft.title.trim() &&
     draft.gameId.trim() &&
     draft.screen.width > 0 &&
@@ -205,9 +213,15 @@ function AppContent(): JSX.Element {
         return;
       }
 
+      const outputSubdirectoryName = createOutputSubdirectoryName(analyzed.value.title);
+      const previousOutputSubdirectoryName = createOutputSubdirectoryName(draft.title);
+      const shouldUpdateOutputSubdirectoryName =
+        !draft.outputSubdirectoryName.trim() || draft.outputSubdirectoryName === previousOutputSubdirectoryName;
+
       patchDraft({
         srcDir: analyzed.value.srcDir,
         title: analyzed.value.title,
+        ...(shouldUpdateOutputSubdirectoryName ? { outputSubdirectoryName } : {}),
       });
     } finally {
       setBusy(false);
@@ -256,17 +270,17 @@ function AppContent(): JSX.Element {
   };
 
   const openOutputDirectory = async () => {
-    if (!converterApi || !draft.outDir) return;
+    if (!converterApi || !actualOutputDirectory) return;
 
     setOpenOutputError(undefined);
-    const opened = await converterApi.openPath(draft.outDir);
+    const opened = await converterApi.openPath(actualOutputDirectory);
     if (!opened.ok) {
       setOpenOutputError(opened.error);
     }
   };
 
   const startPreview = async () => {
-    if (!converterApi || !draft.outDir) return;
+    if (!converterApi || !actualOutputDirectory) return;
 
     setPreviewBusy(true);
     setPreviewUrl(undefined);
@@ -275,7 +289,7 @@ function AppContent(): JSX.Element {
 
     try {
       const started = await converterApi.startPreviewServer({
-        rootDir: draft.outDir,
+        rootDir: actualOutputDirectory,
       });
       if (!started.ok) {
         setPreviewError(started.error);

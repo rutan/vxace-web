@@ -58,6 +58,10 @@ const ja = {
       outDir: {
         required: '出力フォルダを選択してください。',
       },
+      outputSubdirectoryName: {
+        invalid: '作成するフォルダ名が正しくありません。',
+        required: '作成するフォルダ名を入力してください。',
+      },
       packAssets: {
         invalid: 'アセットのパック化設定が正しくありません。',
       },
@@ -142,6 +146,7 @@ const ja = {
     omittedFiles: '除外ファイル',
     omittedReasonSourceFile: '変換元ファイル',
     omittedReasonUnusedAsset: '未使用アセット',
+    output: '出力先',
     source: '変換元',
     successTitle: '変換が完了しました！',
   },
@@ -154,7 +159,11 @@ const ja = {
       warning: 'ゲーム公開後に別のIDに変更すると、セーブデータが引き継がれません。',
     },
     output: {
+      actualDirectoryLabel: '実際の出力先:',
       description: '変換後の Web 公開用ファイルを出力するフォルダを選択します。',
+      parentDirectoryLabel: '親フォルダ',
+      subdirectoryNameLabel: '作成するフォルダ名',
+      subdirectoryNamePlaceholder: 'Example Game',
       title: '出力先を選択',
     },
     placeholder: {
