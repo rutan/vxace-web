@@ -2,6 +2,28 @@
   const READY_MESSAGE = 'vxace-playground-ready';
   const CONFIG_MESSAGE = 'vxace-playground-config';
 
+  const stripPrefix = (path, prefix) => {
+    const normalizedPrefix = prefix.replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+/g, '/');
+    if (!normalizedPrefix) return path;
+
+    return path.toLowerCase().startsWith(normalizedPrefix.toLowerCase()) ? path.slice(normalizedPrefix.length) : path;
+  };
+
+  const getFrameDirectory = () => {
+    const path = window.location.pathname.replace(/\\/g, '/').replace(/^\/+/, '');
+    const index = path.lastIndexOf('/');
+    return index >= 0 ? path.slice(0, index + 1) : '';
+  };
+
+  const normalizeLocalPath = (value) => {
+    return String(value)
+      .replace(/\\/g, '/')
+      .replace(/^\.\//, '')
+      .replace(/^\/+/, '')
+      .replace(/\/+/g, '/')
+      .normalize('NFC');
+  };
+
   const normalizePath = (value) => {
     let path = value;
 
@@ -26,14 +48,8 @@
     }
 
     path = path.replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+/g, '/');
-    const templatePrefix = 'template/';
-    if (path.toLowerCase().startsWith(templatePrefix)) {
-      path = path.slice(templatePrefix.length);
-    }
-    const gamePrefix = 'game/';
-    if (path.toLowerCase().startsWith(gamePrefix)) {
-      path = path.slice(gamePrefix.length);
-    }
+    path = stripPrefix(path, `${getFrameDirectory()}game/`);
+    path = stripPrefix(path, 'game/');
 
     return path.normalize('NFC');
   };
@@ -49,7 +65,7 @@
 
       const payload = event.data.payload;
       state.config = payload;
-      state.fileMap = new Map(payload.files.map((entry) => [normalizePath(entry.path), entry.file]));
+      state.fileMap = new Map(payload.files.map((entry) => [normalizeLocalPath(entry.path), entry.file]));
       resolve(payload);
     });
   });
