@@ -3,6 +3,8 @@ import type { TranslationFunctions } from '../i18n/i18n-types';
 import { cx } from '../utils';
 import { Button } from './Button';
 
+const assetPath = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+
 export interface HelpModalProps {
   LL: TranslationFunctions;
   onClose: () => void;
@@ -83,8 +85,8 @@ export const HelpModal = ({ LL, onClose }: HelpModalProps) => {
               </div>
             </HelpSection>
             <HelpSection title={String(LL.help.licenses.title())}>
-              <HelpLink href="/license.md">{LL.help.licenses.playground()}</HelpLink>
-              <HelpLink href="/template/license.md">{LL.help.licenses.runtime()}</HelpLink>
+              <HelpLink href={assetPath('license.md')}>{LL.help.licenses.playground()}</HelpLink>
+              <HelpLink href={assetPath('template/license.md')}>{LL.help.licenses.runtime()}</HelpLink>
             </HelpSection>
             <div className="border-t border-slate-200 pt-4 text-xs leading-relaxed text-slate-500">
               <p className="m-0">

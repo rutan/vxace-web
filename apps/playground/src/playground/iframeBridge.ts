@@ -23,4 +23,4 @@ export function isPlaygroundReadyMessage(event: MessageEvent) {
   return event.origin === window.location.origin && event.data?.type === READY_MESSAGE;
 }
 
-export const PLAYER_TEMPLATE_URL = '/template/index.html?playground=1';
+export const PLAYER_TEMPLATE_URL = `${import.meta.env.BASE_URL}template/index.html?playground=1`;
