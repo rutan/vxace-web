@@ -1,7 +1,7 @@
-import { BLEND_MODES, Container, Graphics, Sprite, Rectangle, Texture, TilingSprite } from 'pixi.js';
+import { Container, Graphics, Sprite, Rectangle, Texture, TilingSprite } from 'pixi.js';
 import { TkBitmap } from './TkBitmap';
 import { TkRect, TkTone } from './types';
-import { clampChannel, normalizeTone, rgbToHex } from './utils';
+import { clampChannel, normalizeTone } from './utils';
 
 type NineSliceOptions = {
   fillCenter?: boolean;
@@ -11,10 +11,6 @@ type NineSliceOptions = {
 export class TkWindow extends Container {
   private readonly _opennessMask: Graphics;
   private readonly _backgroundSprite: Sprite;
-  private readonly _backgroundPatternSprite: TilingSprite;
-  private readonly _backgroundShade: Graphics;
-  private readonly _toneDarkOverlay: Graphics;
-  private readonly _toneLightOverlay: Graphics;
   private readonly _contentsSprite: Sprite;
   private readonly _contentsMask: Graphics;
   private readonly _cursor: Container;
@@ -38,11 +34,14 @@ export class TkWindow extends Container {
   private _arrowsVisible: boolean;
   private _pause: boolean;
   private _contentsBitmap: TkBitmap | null;
+  private _backgroundCompositeTexture: Texture | null;
+  private _backgroundCompositeKey: string | null;
   _scrollArrowState: { up: boolean; down: boolean; left: boolean; right: boolean };
   private _requestedVisible: boolean;
   private _closedContentsRevision: number;
   private _hideContentsUntilRefresh: boolean;
   private _hasPresentedOpenContents: boolean;
+  private _unsubscribeWindowskinChange: (() => void) | null;
   private _unsubscribeContentsChange: (() => void) | null;
   private _animationCount: number;
 
@@ -51,10 +50,6 @@ export class TkWindow extends Container {
 
     this._opennessMask = new Graphics();
     this._backgroundSprite = new Sprite(Texture.EMPTY);
-    this._backgroundPatternSprite = new TilingSprite(Texture.EMPTY);
-    this._backgroundShade = new Graphics();
-    this._toneDarkOverlay = new Graphics();
-    this._toneLightOverlay = new Graphics();
     this._contentsSprite = new Sprite(Texture.EMPTY);
     this._contentsMask = new Graphics();
     this._cursor = new Container();
@@ -78,24 +73,21 @@ export class TkWindow extends Container {
     this._arrowsVisible = true;
     this._pause = false;
     this._contentsBitmap = null;
+    this._backgroundCompositeTexture = null;
+    this._backgroundCompositeKey = null;
     this._scrollArrowState = { up: false, down: false, left: false, right: false };
     this._requestedVisible = true;
     this._closedContentsRevision = 0;
     this._hideContentsUntilRefresh = false;
     this._hasPresentedOpenContents = false;
+    this._unsubscribeWindowskinChange = null;
     this._unsubscribeContentsChange = null;
     this._animationCount = 0;
 
     this._contentsSprite.mask = this._contentsMask;
     this.mask = this._opennessMask;
-    this._toneDarkOverlay.blendMode = BLEND_MODES.MULTIPLY;
-    this._toneLightOverlay.blendMode = BLEND_MODES.ADD;
 
     this.addChild(this._backgroundSprite);
-    this.addChild(this._backgroundPatternSprite);
-    this.addChild(this._backgroundShade);
-    this.addChild(this._toneDarkOverlay);
-    this.addChild(this._toneLightOverlay);
     this.addChild(this._contentsSprite);
     this.addChild(this._cursor);
     this.addChild(this._frame);
@@ -250,8 +242,14 @@ export class TkWindow extends Container {
   }
 
   set windowskin(value: TkBitmap | null) {
+    this._unsubscribeWindowskinChange?.();
     this._windowskin = value;
-    this._refreshBackgroundTexture();
+    this._backgroundCompositeKey = null;
+    this._unsubscribeWindowskinChange =
+      value?.onChange(() => {
+        this._backgroundCompositeKey = null;
+        this._refreshBackgroundTexture();
+      }) ?? null;
     this._refresh();
   }
 
@@ -276,8 +274,11 @@ export class TkWindow extends Container {
   }
 
   destroy(options?: Parameters<Container['destroy']>[0]) {
+    this._unsubscribeWindowskinChange?.();
     this._unsubscribeContentsChange?.();
+    this._unsubscribeWindowskinChange = null;
     this._unsubscribeContentsChange = null;
+    this._setBackgroundTexture(Texture.EMPTY);
     super.destroy(options);
   }
 
@@ -293,7 +294,6 @@ export class TkWindow extends Container {
   }
 
   private _refresh() {
-    this._refreshBackgroundTexture();
     this._refreshLayout();
     this._refreshOpennessMask();
     this._refreshFrame();
@@ -315,12 +315,6 @@ export class TkWindow extends Container {
     this._backgroundSprite.y = innerMargin;
     this._backgroundSprite.width = innerWidth;
     this._backgroundSprite.height = innerHeight;
-    this._backgroundPatternSprite.x = innerMargin;
-    this._backgroundPatternSprite.y = innerMargin;
-    this._backgroundPatternSprite.width = innerWidth;
-    this._backgroundPatternSprite.height = innerHeight;
-
-    this._backgroundShade.clear();
 
     this._refreshContentsPosition();
 
@@ -350,13 +344,47 @@ export class TkWindow extends Container {
 
   private _refreshBackgroundTexture() {
     if (!this._windowskin) {
-      this._backgroundSprite.texture = Texture.EMPTY;
-      this._backgroundPatternSprite.texture = Texture.EMPTY;
+      if (this._backgroundCompositeKey === 'none') return;
+      this._backgroundCompositeKey = 'none';
+      this._setBackgroundTexture(Texture.EMPTY);
       return;
     }
 
-    this._backgroundSprite.texture = this._skinTexture(0, 0, 64, 64);
-    this._backgroundPatternSprite.texture = this._skinTexture(0, 64, 64, 64);
+    const innerMargin = 2;
+    const innerWidth = Math.max(this._windowWidth - innerMargin * 2, 1);
+    const innerHeight = Math.max(this._windowHeight - innerMargin * 2, 1);
+    const compositeKey = this._createBackgroundCompositeKey(innerWidth, innerHeight);
+    if (this._backgroundCompositeKey === compositeKey) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      this._setBackgroundTexture(Texture.EMPTY);
+      return;
+    }
+
+    context.imageSmoothingEnabled = true;
+    context.drawImage(this._windowskin.canvas, 0, 0, 64, 64, 0, 0, innerWidth, innerHeight);
+
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = 64;
+    patternCanvas.height = 64;
+    const patternContext = patternCanvas.getContext('2d');
+    if (patternContext) {
+      patternContext.drawImage(this._windowskin.canvas, 0, 64, 64, 64, 0, 0, 64, 64);
+      const pattern = context.createPattern(patternCanvas, 'repeat');
+      if (pattern) {
+        context.fillStyle = pattern;
+        context.fillRect(0, 0, innerWidth, innerHeight);
+      }
+    }
+
+    this._applyToneToImageData(context, innerWidth, innerHeight);
+    this._setBackgroundTexture(Texture.from(canvas));
+    this._backgroundCompositeKey = compositeKey;
   }
 
   private _refreshFrame() {
@@ -464,37 +492,7 @@ export class TkWindow extends Container {
   }
 
   private _refreshTone() {
-    const innerMargin = 2;
-    const width = Math.max(this._windowWidth - innerMargin * 2, 1);
-    const height = Math.max(this._windowHeight - innerMargin * 2, 1);
-    const positive = {
-      red: clampChannel(Math.max(this._tone.red, 0)),
-      green: clampChannel(Math.max(this._tone.green, 0)),
-      blue: clampChannel(Math.max(this._tone.blue, 0)),
-    };
-    const negative = {
-      red: clampChannel(255 + Math.min(this._tone.red, 0)),
-      green: clampChannel(255 + Math.min(this._tone.green, 0)),
-      blue: clampChannel(255 + Math.min(this._tone.blue, 0)),
-    };
-    const hasPositive = positive.red > 0 || positive.green > 0 || positive.blue > 0;
-    const hasNegative = negative.red < 255 || negative.green < 255 || negative.blue < 255;
-
-    this._toneLightOverlay.clear();
-    if (hasPositive) {
-      this._toneLightOverlay.beginFill(rgbToHex(positive.red, positive.green, positive.blue), 1);
-      this._toneLightOverlay.drawRect(innerMargin, innerMargin, width, height);
-      this._toneLightOverlay.endFill();
-    }
-    this._toneLightOverlay.visible = hasPositive;
-
-    this._toneDarkOverlay.clear();
-    if (hasNegative) {
-      this._toneDarkOverlay.beginFill(rgbToHex(negative.red, negative.green, negative.blue), 1);
-      this._toneDarkOverlay.drawRect(innerMargin, innerMargin, width, height);
-      this._toneDarkOverlay.endFill();
-    }
-    this._toneDarkOverlay.visible = hasNegative;
+    this._refreshBackgroundTexture();
   }
 
   private _refreshAlpha() {
@@ -511,10 +509,6 @@ export class TkWindow extends Container {
     this.visible = this._requestedVisible && openRate > 0;
     this._frame.alpha = windowRate;
     this._backgroundSprite.alpha = backRate;
-    this._backgroundPatternSprite.alpha = backRate;
-    this._backgroundShade.alpha = backRate;
-    this._toneDarkOverlay.alpha = backRate;
-    this._toneLightOverlay.alpha = backRate;
     this._contentsSprite.alpha = contentsRate;
     this._arrows.alpha = windowRate;
     this._pauseSign.alpha = windowRate;
@@ -744,5 +738,52 @@ export class TkWindow extends Container {
 
   private _skinTexture(x: number, y: number, width: number, height: number) {
     return new Texture(this._windowskin!.texture, new Rectangle(x, y, width, height));
+  }
+
+  private _setBackgroundTexture(texture: Texture) {
+    const previousTexture = this._backgroundCompositeTexture;
+    this._backgroundCompositeTexture = texture === Texture.EMPTY ? null : texture;
+    this._backgroundSprite.texture = texture;
+    previousTexture?.destroy(true);
+  }
+
+  private _createBackgroundCompositeKey(innerWidth: number, innerHeight: number) {
+    return [
+      this._windowskin?.revision ?? 0,
+      innerWidth,
+      innerHeight,
+      this._tone.red,
+      this._tone.green,
+      this._tone.blue,
+      this._tone.gray,
+    ].join(':');
+  }
+
+  private _applyToneToImageData(context: CanvasRenderingContext2D, width: number, height: number) {
+    if (this._tone.red === 0 && this._tone.green === 0 && this._tone.blue === 0 && this._tone.gray === 0) return;
+
+    const imageData = context.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    const grayRate = this._tone.gray / 255;
+    const saturation = 1 - grayRate;
+
+    for (let index = 0; index < data.length; index += 4) {
+      let red = data[index] + this._tone.red;
+      let green = data[index + 1] + this._tone.green;
+      let blue = data[index + 2] + this._tone.blue;
+
+      if (grayRate > 0) {
+        const gray = red * 0.3086 + green * 0.6094 + blue * 0.082;
+        red = gray * grayRate + red * saturation;
+        green = gray * grayRate + green * saturation;
+        blue = gray * grayRate + blue * saturation;
+      }
+
+      data[index] = clampChannel(red);
+      data[index + 1] = clampChannel(green);
+      data[index + 2] = clampChannel(blue);
+    }
+
+    context.putImageData(imageData, 0, 0);
   }
 }
