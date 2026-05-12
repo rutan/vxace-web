@@ -39,7 +39,7 @@ test.describe('window compatibility', () => {
     });
   });
 
-  test('windowskin uses separate background, pattern, and frame regions', async ({ page }) => {
+  test('windowskin composites background and pattern before applying window opacity', async ({ page }) => {
     await loadGame(page, { gameDir: 'demo' });
 
     const result = await page.evaluate(async () => {
@@ -53,7 +53,6 @@ test.describe('window compatibility', () => {
       app.setProperty('window', windowId, 'windowHeight', 80);
 
       const backgroundFrame = windowObject._backgroundSprite.texture.frame;
-      const patternFrame = windowObject._backgroundPatternSprite.texture.frame;
       const firstFrameSlice = windowObject._frame.children[0].texture.frame;
 
       return {
@@ -63,12 +62,6 @@ test.describe('window compatibility', () => {
           width: backgroundFrame.width,
           height: backgroundFrame.height,
         },
-        pattern: {
-          x: patternFrame.x,
-          y: patternFrame.y,
-          width: patternFrame.width,
-          height: patternFrame.height,
-        },
         frame: {
           x: firstFrameSlice.x,
           y: firstFrameSlice.y,
@@ -77,18 +70,58 @@ test.describe('window compatibility', () => {
         },
         backgroundWidth: windowObject._backgroundSprite.width,
         backgroundHeight: windowObject._backgroundSprite.height,
-        patternWidth: windowObject._backgroundPatternSprite.width,
-        patternHeight: windowObject._backgroundPatternSprite.height,
       };
     });
 
-    expect(result.background).toEqual({ x: 0, y: 0, width: 64, height: 64 });
-    expect(result.pattern).toEqual({ x: 0, y: 64, width: 64, height: 64 });
+    expect(result.background).toEqual({ x: 0, y: 0, width: 156, height: 76 });
     expect(result.frame).toEqual({ x: 64, y: 0, width: 16, height: 16 });
     expect(result.backgroundWidth).toBe(156);
     expect(result.backgroundHeight).toBe(76);
-    expect(result.patternWidth).toBe(156);
-    expect(result.patternHeight).toBe(76);
+  });
+
+  test('window tone is applied to the composited background before back opacity', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false });
+
+    const result = await page.evaluate(() => {
+      const app = (window as any).rubyBridge.app;
+      const backgroundId = app.createBitmapFromSize(96, 96);
+      const backgroundSpriteId = app.createSprite();
+      const skinId = app.createBitmapFromSize(128, 128);
+      const windowId = app.createWindow();
+      const background = app.getObject('bitmap', backgroundId);
+      const skin = app.getObject('bitmap', skinId);
+      const backgroundSprite = app.getObject('sprite', backgroundSpriteId);
+
+      background.fillRect(0, 0, 96, 96, 'rgba(100, 100, 100, 1)');
+      app.setBitmapToSprite(backgroundSpriteId, backgroundId);
+      backgroundSprite.zIndex = 0;
+
+      skin.clear();
+      skin.fillRect(0, 0, 64, 64, 'rgba(40, 80, 120, 1)');
+      skin.fillRect(0, 64, 64, 64, 'rgba(255, 255, 255, 0.10196078431372549)');
+
+      app.setWindowskinToWindow(windowId, skinId);
+      app.setProperty('window', windowId, 'x', 0);
+      app.setProperty('window', windowId, 'y', 0);
+      app.setProperty('window', windowId, 'zIndex', 100);
+      app.setProperty('window', windowId, 'windowWidth', 68);
+      app.setProperty('window', windowId, 'windowHeight', 68);
+      app.setProperty('window', windowId, 'backOpacity', 192);
+      app.setToneToWindow(windowId, JSON.stringify({ red: -34, green: 0, blue: 68, gray: 0 }));
+      app._renderNow();
+
+      const canvas = app._pixiApp.renderer.extract.canvas(undefined, app._pixiApp.screen) as HTMLCanvasElement;
+      const context = canvas.getContext('2d')!;
+      return Array.from(context.getImageData(10, 10, 1, 1).data);
+    });
+
+    expect(result[0]).toBeGreaterThanOrEqual(43);
+    expect(result[0]).toBeLessThanOrEqual(47);
+    expect(result[1]).toBeGreaterThanOrEqual(96);
+    expect(result[1]).toBeLessThanOrEqual(101);
+    expect(result[2]).toBeGreaterThanOrEqual(174);
+    expect(result[2]).toBeLessThanOrEqual(180);
+    expect(result[3]).toBe(255);
   });
 
   test('windowskin frame slices do not overlap on short windows', async ({ page }) => {
@@ -309,7 +342,7 @@ test.describe('window compatibility', () => {
 
       return {
         frameAlpha: windowObject._frame.alpha,
-        backgroundAlpha: windowObject._backgroundShade.alpha,
+        backgroundAlpha: windowObject._backgroundSprite.alpha,
         contentsAlpha: windowObject._contentsSprite.alpha,
       };
     });
@@ -445,8 +478,6 @@ test.describe('window compatibility', () => {
         contentsX: windowObject._contentsSprite.x,
         contentsY: windowObject._contentsSprite.y,
         cursorBounds: windowObject._cursor.getLocalBounds(),
-        toneLightVisible: windowObject._toneLightOverlay.visible,
-        toneDarkVisible: windowObject._toneDarkOverlay.visible,
       };
     });
 
@@ -456,8 +487,6 @@ test.describe('window compatibility', () => {
     expect(result.contentsY).toBe(6);
     expect(result.cursorBounds.x).toBeCloseTo(23, 1);
     expect(result.cursorBounds.y).toBeCloseTo(23, 1);
-    expect(result.toneLightVisible).toBe(true);
-    expect(result.toneDarkVisible).toBe(true);
   });
 
   test('pause, arrows, and padding bottom affect window state', async ({ page }) => {
