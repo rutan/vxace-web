@@ -180,6 +180,14 @@ class Bitmap
     )
   end
 
+  def __rgba_pixel_data
+    Base64.decode64(get_object.getRgbaPixelsBase64.to_s)
+  end
+
+  def __rgba_pixel_data=(data)
+    get_object.putRgbaPixelsBase64(Base64.strict_encode64(data.to_s))
+  end
+
   private
 
   def get_object

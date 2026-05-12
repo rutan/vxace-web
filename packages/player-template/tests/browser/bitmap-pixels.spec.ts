@@ -51,6 +51,48 @@ test.describe('bitmap pixel APIs', () => {
     expect(result).toBe('12,34,56,255');
   });
 
+  test('Ruby DL::CPtr can read and write Bitmap pixel buffers', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false });
+
+    const result = await page.evaluate(async () => {
+      const rubyManager = (window as any).rubyBridge.rubyManager;
+      const value = await rubyManager.evalAsync(
+        `
+        class Bitmap
+          def ptr_for_test
+            addr = DL.dlwrap(self) + 16
+            cptr = DL::CPtr.new(addr)
+            addr = cptr[0, 4].unpack('i')[0] + 8
+            cptr.free
+            cptr = DL::CPtr.new(addr)
+            addr = cptr[0, 4].unpack('i')[0] + 16
+            cptr.free
+            cptr = DL::CPtr.new(addr)
+            addr = cptr[0, 4].unpack('i')[0]
+            cptr.free
+            DL::CPtr.new(addr, width * height * 4)
+          end
+        end
+
+        source = Bitmap.new(2, 1)
+        source.set_pixel(0, 0, Color.new(10, 20, 30, 255))
+        source.set_pixel(1, 0, Color.new(50, 60, 70, 255))
+        raw = source.ptr_for_test[0, source.ptr_for_test.size]
+
+        copied = Bitmap.new(2, 1)
+        copied.ptr_for_test[0, copied.ptr_for_test.size] = raw
+        a = copied.get_pixel(0, 0)
+        b = copied.get_pixel(1, 0)
+        [raw.bytes.join(':'), a.red, a.green, a.blue, a.alpha, b.red, b.green, b.blue, b.alpha].join(',')
+      `,
+        'test-dl-cptr-bitmap-pixels',
+      );
+      return value.toString();
+    });
+
+    expect(result).toBe('10:20:30:255:50:60:70:255,10,20,30,255,50,60,70,255');
+  });
+
   test('Ruby Bitmap#hue_change rotates hue, normalizes degrees, and preserves alpha', async ({ page }) => {
     await loadGame(page, { gameDir: 'demo', guest: false });
 

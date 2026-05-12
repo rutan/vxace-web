@@ -188,6 +188,24 @@ export class TkBitmap {
     this._markChanged();
   }
 
+  getRgbaPixelsBase64() {
+    const imageData = this._ctx.getImageData(0, 0, this._canvas.width, this._canvas.height);
+    return bytesToBase64(imageData.data);
+  }
+
+  putRgbaPixelsBase64(base64: string) {
+    const imageData = this._ctx.createImageData(this._canvas.width, this._canvas.height);
+    const binary = atob(String(base64));
+    const length = Math.min(binary.length, imageData.data.length);
+
+    for (let index = 0; index < length; index += 1) {
+      imageData.data[index] = binary.charCodeAt(index);
+    }
+
+    this._ctx.putImageData(imageData, 0, 0);
+    this._markChanged();
+  }
+
   blur() {
     const width = this._canvas.width;
     const height = this._canvas.height;
@@ -406,6 +424,17 @@ const recordBitmapEvent = (label: string) => {
 };
 
 const TEXT_RENDER_SCALE = 2;
+const BASE64_CHUNK_SIZE = 0x8000;
+
+const bytesToBase64 = (bytes: Uint8ClampedArray) => {
+  let binary = '';
+
+  for (let offset = 0; offset < bytes.length; offset += BASE64_CHUNK_SIZE) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + BASE64_CHUNK_SIZE));
+  }
+
+  return btoa(binary);
+};
 
 const normalizeHueDegrees = (value: number) => {
   const hue = Math.trunc(Number(value) || 0) % 360;

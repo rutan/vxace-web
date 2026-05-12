@@ -1,6 +1,7 @@
 import { default as audioCode } from './audio.rb?raw';
 import { default as bitmapCode } from './bitmap.rb?raw';
 import { default as colorCode } from './color.rb?raw';
+import { default as dlCode } from './dl.rb?raw';
 import { default as errorsCode } from './errors.rb?raw';
 import { default as fontCode } from './font.rb?raw';
 import { default as graphicsCode } from './graphics.rb?raw';
@@ -29,6 +30,7 @@ export const coreCode = [
   inputCode,
   kernelCode,
   objectLifecycleCode,
+  dlCode,
   saveFileStorageCode,
   rectCode,
   rpgCode,
