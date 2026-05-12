@@ -54,6 +54,9 @@ test.describe('window compatibility', () => {
 
       const backgroundFrame = windowObject._backgroundSprite.texture.frame;
       const firstFrameSlice = windowObject._frame.children[0].texture.frame;
+      const backgroundTexture = windowObject._backgroundSprite.texture;
+      app.setProperty('window', windowId, 'padding', 8);
+      app.setProperty('window', windowId, 'pause', true);
 
       return {
         background: {
@@ -70,6 +73,7 @@ test.describe('window compatibility', () => {
         },
         backgroundWidth: windowObject._backgroundSprite.width,
         backgroundHeight: windowObject._backgroundSprite.height,
+        backgroundTextureReused: backgroundTexture === windowObject._backgroundSprite.texture,
       };
     });
 
@@ -77,6 +81,7 @@ test.describe('window compatibility', () => {
     expect(result.frame).toEqual({ x: 64, y: 0, width: 16, height: 16 });
     expect(result.backgroundWidth).toBe(156);
     expect(result.backgroundHeight).toBe(76);
+    expect(result.backgroundTextureReused).toBe(true);
   });
 
   test('window tone is applied to the composited background before back opacity', async ({ page }) => {
@@ -122,6 +127,41 @@ test.describe('window compatibility', () => {
     expect(result[2]).toBeGreaterThanOrEqual(174);
     expect(result[2]).toBeLessThanOrEqual(180);
     expect(result[3]).toBe(255);
+  });
+
+  test('window background follows windowskin bitmap mutations after assignment', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false });
+
+    const result = await page.evaluate(() => {
+      const app = (window as any).rubyBridge.app;
+      const skinId = app.createBitmapFromSize(128, 128);
+      const windowId = app.createWindow();
+      const skin = app.getObject('bitmap', skinId);
+      const readPixel = () => {
+        app._renderNow();
+        const canvas = app._pixiApp.renderer.extract.canvas(undefined, app._pixiApp.screen) as HTMLCanvasElement;
+        const context = canvas.getContext('2d')!;
+        return Array.from(context.getImageData(34, 34, 1, 1).data);
+      };
+
+      skin.clear();
+      skin.fillRect(0, 0, 64, 64, 'rgba(255, 0, 0, 1)');
+      app.setWindowskinToWindow(windowId, skinId);
+      app.setProperty('window', windowId, 'x', 0);
+      app.setProperty('window', windowId, 'y', 0);
+      app.setProperty('window', windowId, 'windowWidth', 68);
+      app.setProperty('window', windowId, 'windowHeight', 68);
+      app.setProperty('window', windowId, 'backOpacity', 255);
+      const before = readPixel();
+
+      skin.fillRect(0, 0, 64, 64, 'rgba(0, 0, 255, 1)');
+      const after = readPixel();
+
+      return { before, after };
+    });
+
+    expect(result.before).toEqual([255, 0, 0, 255]);
+    expect(result.after).toEqual([0, 0, 255, 255]);
   });
 
   test('windowskin frame slices do not overlap on short windows', async ({ page }) => {

@@ -35,11 +35,13 @@ export class TkWindow extends Container {
   private _pause: boolean;
   private _contentsBitmap: TkBitmap | null;
   private _backgroundCompositeTexture: Texture | null;
+  private _backgroundCompositeKey: string | null;
   _scrollArrowState: { up: boolean; down: boolean; left: boolean; right: boolean };
   private _requestedVisible: boolean;
   private _closedContentsRevision: number;
   private _hideContentsUntilRefresh: boolean;
   private _hasPresentedOpenContents: boolean;
+  private _unsubscribeWindowskinChange: (() => void) | null;
   private _unsubscribeContentsChange: (() => void) | null;
   private _animationCount: number;
 
@@ -72,11 +74,13 @@ export class TkWindow extends Container {
     this._pause = false;
     this._contentsBitmap = null;
     this._backgroundCompositeTexture = null;
+    this._backgroundCompositeKey = null;
     this._scrollArrowState = { up: false, down: false, left: false, right: false };
     this._requestedVisible = true;
     this._closedContentsRevision = 0;
     this._hideContentsUntilRefresh = false;
     this._hasPresentedOpenContents = false;
+    this._unsubscribeWindowskinChange = null;
     this._unsubscribeContentsChange = null;
     this._animationCount = 0;
 
@@ -238,7 +242,14 @@ export class TkWindow extends Container {
   }
 
   set windowskin(value: TkBitmap | null) {
+    this._unsubscribeWindowskinChange?.();
     this._windowskin = value;
+    this._backgroundCompositeKey = null;
+    this._unsubscribeWindowskinChange =
+      value?.onChange(() => {
+        this._backgroundCompositeKey = null;
+        this._refreshBackgroundTexture();
+      }) ?? null;
     this._refresh();
   }
 
@@ -263,7 +274,9 @@ export class TkWindow extends Container {
   }
 
   destroy(options?: Parameters<Container['destroy']>[0]) {
+    this._unsubscribeWindowskinChange?.();
     this._unsubscribeContentsChange?.();
+    this._unsubscribeWindowskinChange = null;
     this._unsubscribeContentsChange = null;
     this._setBackgroundTexture(Texture.EMPTY);
     super.destroy(options);
@@ -331,6 +344,8 @@ export class TkWindow extends Container {
 
   private _refreshBackgroundTexture() {
     if (!this._windowskin) {
+      if (this._backgroundCompositeKey === 'none') return;
+      this._backgroundCompositeKey = 'none';
       this._setBackgroundTexture(Texture.EMPTY);
       return;
     }
@@ -338,6 +353,9 @@ export class TkWindow extends Container {
     const innerMargin = 2;
     const innerWidth = Math.max(this._windowWidth - innerMargin * 2, 1);
     const innerHeight = Math.max(this._windowHeight - innerMargin * 2, 1);
+    const compositeKey = this._createBackgroundCompositeKey(innerWidth, innerHeight);
+    if (this._backgroundCompositeKey === compositeKey) return;
+
     const canvas = document.createElement('canvas');
     canvas.width = innerWidth;
     canvas.height = innerHeight;
@@ -366,6 +384,7 @@ export class TkWindow extends Container {
 
     this._applyToneToImageData(context, innerWidth, innerHeight);
     this._setBackgroundTexture(Texture.from(canvas));
+    this._backgroundCompositeKey = compositeKey;
   }
 
   private _refreshFrame() {
@@ -726,6 +745,18 @@ export class TkWindow extends Container {
     this._backgroundCompositeTexture = texture === Texture.EMPTY ? null : texture;
     this._backgroundSprite.texture = texture;
     previousTexture?.destroy(true);
+  }
+
+  private _createBackgroundCompositeKey(innerWidth: number, innerHeight: number) {
+    return [
+      this._windowskin?.revision ?? 0,
+      innerWidth,
+      innerHeight,
+      this._tone.red,
+      this._tone.green,
+      this._tone.blue,
+      this._tone.gray,
+    ].join(':');
   }
 
   private _applyToneToImageData(context: CanvasRenderingContext2D, width: number, height: number) {
