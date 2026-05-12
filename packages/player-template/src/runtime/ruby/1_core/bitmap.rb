@@ -9,7 +9,11 @@ class Bitmap
       if args.size == 1
         JS.global[:rubyBridge][:app].loadBitmapFromImage("#{RPGVXAceWeb::Internal.game_dir}/#{args[0]}").await.to_i
       else
-        JS.global[:rubyBridge][:app].createBitmapFromSize(args[0].to_i, args[1].to_i).to_i
+        width = args[0].to_i
+        height = args[1].to_i
+        raise RGSSError, 'failed to create bitmap' if width <= 0 || height <= 0
+
+        JS.global[:rubyBridge][:app].createBitmapFromSize(width, height).to_i
       end
 
     @font = Font.new

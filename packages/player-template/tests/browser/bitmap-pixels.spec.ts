@@ -51,6 +51,32 @@ test.describe('bitmap pixel APIs', () => {
     expect(result).toBe('12,34,56,255');
   });
 
+  test('Ruby Bitmap.new rejects zero-sized bitmaps like RGSS3', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false });
+
+    const result = await page.evaluate(async () => {
+      const rubyManager = (window as any).rubyBridge.rubyManager;
+      const value = await rubyManager.evalAsync(
+        `
+        [[0, 1], [1, 0], [0, 0]].map do |width, height|
+          begin
+            Bitmap.new(width, height)
+            'created'
+          rescue Exception => error
+            [error.class.to_s, error.message].join(':')
+          end
+        end.join('|')
+      `,
+        'test-bitmap-rejects-zero-size',
+      );
+      return value.toString();
+    });
+
+    expect(result).toBe(
+      'RGSSError:failed to create bitmap|RGSSError:failed to create bitmap|RGSSError:failed to create bitmap',
+    );
+  });
+
   test('Ruby DL::CPtr can read and write Bitmap pixel buffers', async ({ page }) => {
     await loadGame(page, { gameDir: 'demo', guest: false });
 
