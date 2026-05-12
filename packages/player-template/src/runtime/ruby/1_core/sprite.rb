@@ -20,6 +20,7 @@ class Sprite
     @wave_phase = 0
     @bush_opacity = 128
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'sprite', @__sprite_id)
   end
 
   def bitmap=(bitmap)

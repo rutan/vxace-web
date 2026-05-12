@@ -21,6 +21,7 @@ class Viewport
     @ox = 0
     @oy = 0
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'viewport', @__viewport_id)
     sync_all
   end
 

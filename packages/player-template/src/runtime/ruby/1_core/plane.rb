@@ -13,6 +13,7 @@ class Plane
     bind_color(@color)
     bind_tone(@tone)
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'plane', @__plane_id)
   end
 
   def bitmap=(bitmap)

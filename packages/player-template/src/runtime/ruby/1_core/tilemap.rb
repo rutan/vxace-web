@@ -65,6 +65,7 @@ class Tilemap
     @ox = 0
     @oy = 0
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'tilemap', @__tilemap_id)
   end
 
   def bitmaps=(value)

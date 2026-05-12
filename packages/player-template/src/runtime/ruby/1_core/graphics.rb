@@ -46,6 +46,7 @@ module Graphics
 
     def freeze
       JS.global[:rubyBridge][:app].freezeGraphics
+      RPGVXAceWeb::RGSSObjectLifecycle.collect
     end
 
     def transition(duration = 10, filename = nil, vague = 40)
@@ -66,6 +67,9 @@ module Graphics
       end
       JS.global[:rubyBridge][:app].clearFrozenGraphics
       self.brightness = 255
+
+      # Call GC here to allow collecting the now-unreferenced Sprites after the transition is complete.
+      RPGVXAceWeb::RGSSObjectLifecycle.collect
     end
 
     def snap_to_bitmap
