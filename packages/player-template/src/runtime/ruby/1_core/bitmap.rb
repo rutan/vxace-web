@@ -9,7 +9,11 @@ class Bitmap
       if args.size == 1
         JS.global[:rubyBridge][:app].loadBitmapFromImage("#{RPGVXAceWeb::Internal.game_dir}/#{args[0]}").await.to_i
       else
-        JS.global[:rubyBridge][:app].createBitmapFromSize(args[0].to_i, args[1].to_i).to_i
+        width = args[0].to_i
+        height = args[1].to_i
+        raise RGSSError, 'failed to create bitmap' if width <= 0 || height <= 0
+
+        JS.global[:rubyBridge][:app].createBitmapFromSize(width, height).to_i
       end
 
     @font = Font.new
@@ -28,6 +32,7 @@ class Bitmap
   def dispose
     return if @disposed
 
+    DL.__release_bitmap(self) if defined?(DL)
     JS.global[:rubyBridge][:app].disposeObject('bitmap', @__bitmap_id)
     @disposed = true
   end
@@ -178,6 +183,14 @@ class Bitmap
       color.blue.to_i,
       color.alpha.to_i
     )
+  end
+
+  def __rgba_pixel_data
+    Base64.decode64(get_object.getRgbaPixelsBase64.to_s)
+  end
+
+  def __rgba_pixel_data=(data)
+    get_object.putRgbaPixelsBase64(Base64.strict_encode64(data.to_s))
   end
 
   private
