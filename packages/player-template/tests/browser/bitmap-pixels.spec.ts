@@ -103,20 +103,40 @@ test.describe('bitmap pixel APIs', () => {
         source = Bitmap.new(2, 1)
         source.set_pixel(0, 0, Color.new(10, 20, 30, 255))
         source.set_pixel(1, 0, Color.new(50, 60, 70, 255))
-        raw = source.ptr_for_test[0, source.ptr_for_test.size]
+        source_ptr = source.ptr_for_test
+        raw = source_ptr[0, source_ptr.size]
+        source.dispose
+        disposed_read = source_ptr[0, source_ptr.size]
 
         copied = Bitmap.new(2, 1)
-        copied.ptr_for_test[0, copied.ptr_for_test.size] = raw
+        copied_ptr = copied.ptr_for_test
+        copied_ptr[0, copied_ptr.size] = raw
+        copied_ptr[6, 8] = [90, 255, 92, 93, 94, 95, 96, 97].pack('C*')
+        copied_raw = copied_ptr[0, copied_ptr.size]
         a = copied.get_pixel(0, 0)
         b = copied.get_pixel(1, 0)
-        [raw.bytes.join(':'), a.red, a.green, a.blue, a.alpha, b.red, b.green, b.blue, b.alpha].join(',')
+        [
+          raw.bytes.join(':'),
+          disposed_read.bytes.join(':'),
+          copied_raw.bytes.join(':'),
+          a.red,
+          a.green,
+          a.blue,
+          a.alpha,
+          b.red,
+          b.green,
+          b.blue,
+          b.alpha,
+        ].join(',')
       `,
         'test-dl-cptr-bitmap-pixels',
       );
       return value.toString();
     });
 
-    expect(result).toBe('10:20:30:255:50:60:70:255,10,20,30,255,50,60,70,255');
+    expect(result).toBe(
+      '10:20:30:255:50:60:70:255,0:0:0:0:0:0:0:0,10:20:30:255:50:60:90:255,10,20,30,255,50,60,90,255',
+    );
   });
 
   test('Ruby Bitmap#hue_change rotates hue, normalizes degrees, and preserves alpha', async ({ page }) => {

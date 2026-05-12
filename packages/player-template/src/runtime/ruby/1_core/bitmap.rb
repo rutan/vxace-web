@@ -32,6 +32,7 @@ class Bitmap
   def dispose
     return if @disposed
 
+    DL.__release_bitmap(self) if defined?(DL)
     JS.global[:rubyBridge][:app].disposeObject('bitmap', @__bitmap_id)
     @disposed = true
   end

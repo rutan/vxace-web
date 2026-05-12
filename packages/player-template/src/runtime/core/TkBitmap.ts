@@ -430,7 +430,9 @@ const bytesToBase64 = (bytes: Uint8ClampedArray) => {
   let binary = '';
 
   for (let offset = 0; offset < bytes.length; offset += BASE64_CHUNK_SIZE) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + BASE64_CHUNK_SIZE));
+    const chunk = bytes.subarray(offset, offset + BASE64_CHUNK_SIZE);
+    const chars = Array.from({ length: chunk.length }, (_, index) => String.fromCharCode(chunk[index]));
+    binary += chars.join('');
   }
 
   return btoa(binary);
