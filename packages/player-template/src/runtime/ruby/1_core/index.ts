@@ -6,6 +6,7 @@ import { default as fontCode } from './font.rb?raw';
 import { default as graphicsCode } from './graphics.rb?raw';
 import { default as inputCode } from './input.rb?raw';
 import { default as kernelCode } from './kernel.rb?raw';
+import { default as objectLifecycleCode } from './object_lifecycle.rb?raw';
 import { default as planeCode } from './plane.rb?raw';
 import { default as rectCode } from './rect.rb?raw';
 import { default as rpgCode } from './rpg.rb?raw';
@@ -27,6 +28,7 @@ export const coreCode = [
   graphicsCode,
   inputCode,
   kernelCode,
+  objectLifecycleCode,
   saveFileStorageCode,
   rectCode,
   rpgCode,

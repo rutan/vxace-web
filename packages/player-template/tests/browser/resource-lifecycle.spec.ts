@@ -54,4 +54,117 @@ test.describe('resource lifecycle', () => {
     expect(result.disposedWindow).toBe(true);
     expect(result.disposedViewport).toBe(true);
   });
+
+  test('Ruby GC disposes overwritten RGSS sprites', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false });
+
+    const result = await page.evaluate(async () => {
+      const app = (window as any).rubyBridge.app;
+      const rubyManager = (window as any).rubyBridge.rubyManager;
+      const before = app.debugSnapshot();
+
+      const ids = JSON.parse(
+        (
+          await rubyManager.evalAsync(
+            `
+            def make_overwritten_rgss_sprite_ids
+              sprite = Sprite.new
+              first_id = sprite.instance_variable_get(:@__sprite_id)
+              sprite = Sprite.new
+              second_id = sprite.instance_variable_get(:@__sprite_id)
+              $__resource_lifecycle_kept_sprite = sprite
+              [first_id, second_id].to_json
+            end
+
+            make_overwritten_rgss_sprite_ids
+          `,
+            'test-rgss-sprite-gc-dispose',
+          )
+        ).toString(),
+      );
+      const afterCreate = app.debugSnapshot();
+
+      await rubyManager.evalAsync('GC.start', 'test-rgss-sprite-gc-start');
+      const afterGc = app.debugSnapshot();
+      const firstDisposed = app.getObject('sprite', ids[0]) == null;
+      const secondAlive = app.getObject('sprite', ids[1]) != null;
+
+      await rubyManager.evalAsync(
+        '$__resource_lifecycle_kept_sprite.dispose; $__resource_lifecycle_kept_sprite = nil',
+        'test-rgss-sprite-gc-cleanup',
+      );
+
+      return {
+        before,
+        afterCreate,
+        afterGc,
+        firstDisposed,
+        secondAlive,
+      };
+    });
+
+    expect(result.afterCreate.spriteCount).toBe(result.before.spriteCount + 2);
+    expect(result.afterGc.spriteCount).toBe(result.before.spriteCount + 1);
+    expect(result.firstDisposed).toBe(true);
+    expect(result.secondAlive).toBe(true);
+  });
+
+  test('Graphics.freeze collects overwritten RGSS sprites before scene transitions', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false });
+
+    const result = await page.evaluate(async () => {
+      const app = (window as any).rubyBridge.app;
+      const rubyManager = (window as any).rubyBridge.rubyManager;
+      const before = app.debugSnapshot();
+
+      const ids = JSON.parse(
+        (
+          await rubyManager.evalAsync(
+            `
+            bitmap = Bitmap.new(16, 16)
+            sprite = Sprite.new
+            sprite.bitmap = bitmap
+            first_id = sprite.instance_variable_get(:@__sprite_id)
+            sprite = Sprite.new
+            sprite.bitmap = bitmap
+            $__resource_lifecycle_kept_bitmap = bitmap
+            $__resource_lifecycle_kept_sprite = sprite
+
+            before_freeze = JS.global[:rubyBridge][:app].debugSnapshot()[:spriteCount].to_i
+            Graphics.freeze
+            after_freeze = JS.global[:rubyBridge][:app].debugSnapshot()[:spriteCount].to_i
+
+            {
+              first_id: first_id,
+              second_id: sprite.instance_variable_get(:@__sprite_id),
+              before_freeze: before_freeze,
+              after_freeze: after_freeze
+            }.to_json
+          `,
+            'test-graphics-freeze-collects-overwritten-sprite',
+          )
+        ).toString(),
+      );
+
+      const firstDisposed = app.getObject('sprite', ids.first_id) == null;
+      const secondAlive = app.getObject('sprite', ids.second_id) != null;
+
+      await rubyManager.evalAsync(
+        `
+        $__resource_lifecycle_kept_sprite.dispose
+        $__resource_lifecycle_kept_bitmap.dispose
+        $__resource_lifecycle_kept_sprite = nil
+        $__resource_lifecycle_kept_bitmap = nil
+      `,
+        'test-graphics-freeze-collects-overwritten-sprite-cleanup',
+      );
+
+      return { before, ids, firstDisposed, secondAlive };
+    });
+
+    expect(result.ids.before_freeze).toBe(result.before.spriteCount + 2);
+    expect(result.ids.after_freeze).toBe(result.before.spriteCount + 1);
+    expect(result.firstDisposed).toBe(true);
+    expect(result.secondAlive).toBe(true);
+  });
 });

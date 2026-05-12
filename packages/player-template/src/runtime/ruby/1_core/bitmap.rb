@@ -14,6 +14,7 @@ class Bitmap
 
     @font = Font.new
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'bitmap', @__bitmap_id)
   end
 
   def initialize_copy(source)
@@ -21,6 +22,7 @@ class Bitmap
     @__bitmap_id = JS.global[:rubyBridge][:app].cloneBitmap(source.__bitmap_id).to_i
     @font = source.font.clone
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'bitmap', @__bitmap_id)
   end
 
   def dispose

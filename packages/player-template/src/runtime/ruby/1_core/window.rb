@@ -24,6 +24,7 @@ class Window
     @tone = Tone.new
     bind_tone(@tone)
     @disposed = false
+    RPGVXAceWeb::RGSSObjectLifecycle.register_finalizer(self, 'window', @__window_id)
     write_property('x', x.to_i)
     write_property('y', y.to_i)
     write_property('windowWidth', width.to_i)
