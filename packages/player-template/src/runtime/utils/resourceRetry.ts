@@ -11,8 +11,8 @@ export type ResourceLoadErrorPresentation = {
   url: string;
   label: string;
   attempt: number;
-  message: string;
-  detail: string;
+  status: number | null;
+  causeMessage: string;
   retry: () => void;
 };
 
@@ -98,11 +98,11 @@ export class ResourceRetryManager {
 
     this._presenter.showResourceLoadError({
       kind: latestFailure.context.kind,
-      url: latestFailure.context.url,
+      url: latestFailure.error.url || latestFailure.context.url,
       label: latestFailure.context.label ?? latestFailure.context.url,
       attempt: latestFailure.attempt,
-      message: '通信エラーが発生しました。',
-      detail: formatResourceLoadFailure(latestFailure),
+      status: latestFailure.error.status,
+      causeMessage: latestFailure.error.message,
       retry: () => this.retry(),
     });
   }
@@ -112,15 +112,4 @@ export const resourceRetryManager = new ResourceRetryManager();
 
 export const configureResourceLoadErrorPresenter = (presenter: ResourceLoadErrorPresenter | null) => {
   resourceRetryManager.setPresenter(presenter);
-};
-
-const formatResourceLoadFailure = ({ context, error, attempt }: PendingFailure) => {
-  const lines = [
-    `読み込み: ${context.label ?? context.url}`,
-    `URL: ${context.url}`,
-    `試行回数: ${attempt}`,
-    `詳細: ${error.message}`,
-  ];
-
-  return lines.join('\n');
 };

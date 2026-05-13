@@ -4,9 +4,8 @@ import {
   completeBlockingResourceWaitIfIdle,
   configureBlockingResourceWaitPresenter,
   trackBlockingResourceWait,
-  type BlockingResourceWaitPresentation,
 } from '../utils/blockingResourceWait';
-import { configureResourceLoadErrorPresenter, type ResourceLoadErrorPresentation } from '../utils/resourceRetry';
+import { configureResourceLoadErrorPresenter } from '../utils/resourceRetry';
 import {
   FALLBACK_FONT_RENDER_METRICS,
   FontRenderMetricsRegistry,
@@ -14,6 +13,7 @@ import {
 } from './FontRenderMetrics';
 import { GameAssetProvider } from './GameAssetProvider';
 import { KeyManager } from './KeyManager';
+import { createDefaultPresenter, type Presenter } from './presenter';
 import { RgssDisplayList } from './RgssDisplayList';
 import { TkBitmap } from './TkBitmap';
 import { TkPlane } from './TkPlane';
@@ -31,6 +31,7 @@ export interface AppParameters {
   element: HTMLElement;
   bootStatusElement?: HTMLElement | null;
   fontRenderMetrics?: FontRenderMetricsRegistry;
+  presenter?: Presenter;
 }
 
 type DebugSnapshot = {
@@ -95,17 +96,7 @@ export class App {
   private _frozenCanvas: HTMLCanvasElement | null;
   private _transitionMaskCanvas: HTMLCanvasElement | null;
   private _transitionTexture: Texture | null;
-  private _messageElement!: HTMLDivElement;
-  private _messageContentElement!: HTMLDivElement;
-  private _runtimeErrorElement!: HTMLDivElement;
-  private _runtimeErrorContentElement!: HTMLPreElement;
-  private _resourceErrorElement!: HTMLDivElement;
-  private _resourceErrorTitleElement!: HTMLDivElement;
-  private _resourceErrorContentElement!: HTMLDivElement;
-  private _resourceErrorRetryButton!: HTMLButtonElement;
-  private _resourceLoadingElement!: HTMLDivElement;
-  private _resourceLoadingLabelElement!: HTMLDivElement;
-  private _bootStatusElement: HTMLElement | null;
+  private readonly _presenter: Presenter;
   private _record: RecordObj;
   private readonly _assetProvider: GameAssetProvider;
   private readonly _gameManifest: GameManifest;
@@ -129,7 +120,12 @@ export class App {
     this._assetProvider = params.assetProvider;
     this._gameManifest = params.assetProvider.manifest;
     this._fontRenderMetrics = params.fontRenderMetrics ?? new FontRenderMetricsRegistry();
-    this._bootStatusElement = params.bootStatusElement ?? null;
+    this._presenter =
+      params.presenter ??
+      createDefaultPresenter({
+        appElement: params.element,
+        bootStatusElement: params.bootStatusElement,
+      });
     this._record = {
       bitmap: new Map(),
       sprite: new Map(),
@@ -568,7 +564,7 @@ export class App {
     try {
       const targetTime = this._nextGraphicsUpdateAt ?? performance.now() + intervalMs;
       this._renderNow();
-      this._completeBootStatus();
+      this._presenter.completeBoot();
       // Reaching Graphics.update means RGSS has returned to the frame loop.
       completeBlockingResourceWaitIfIdle();
       await waitMs(targetTime - performance.now());
@@ -815,82 +811,39 @@ export class App {
   }
 
   showMessage(lines: unknown) {
-    const formatMessageLine = (line: unknown) => {
-      if (line == null) return '';
-      if (typeof line === 'string') return line;
-      if (
-        typeof line === 'number' ||
-        typeof line === 'boolean' ||
-        typeof line === 'bigint' ||
-        typeof line === 'symbol'
-      ) {
-        return String(line);
-      }
-      if (line instanceof Error) return line.message;
-      if (typeof line === 'object') {
-        try {
-          return JSON.stringify(line) ?? '';
-        } catch {
-          return '';
-        }
-      }
-      return '';
-    };
-    const texts = Array.isArray(lines) ? lines.map(formatMessageLine) : [formatMessageLine(lines)];
-    this._messageContentElement.textContent = texts.join('\n');
-    this._messageElement.hidden = false;
+    this._presenter.showMessage({ lines });
   }
 
   closeMessage() {
-    this._messageElement.hidden = true;
-    this._messageContentElement.textContent = '';
+    this._presenter.closeMessage();
   }
 
   isMessageOpen() {
-    return !this._messageElement.hidden;
+    return this._presenter.isMessageOpen();
   }
 
   showRuntimeError(message: string) {
-    this._completeBootStatus();
-    this._runtimeErrorContentElement.textContent = message;
-    this._runtimeErrorElement.hidden = false;
+    this._presenter.showRuntimeError({ message });
   }
 
   hideRuntimeError() {
-    this._runtimeErrorElement.hidden = true;
-    this._runtimeErrorContentElement.textContent = '';
+    this._presenter.hideRuntimeError();
   }
 
-  showResourceLoadError(presentation: ResourceLoadErrorPresentation) {
-    this._completeBootStatus();
-    this.hideResourceLoading();
-    const message = localizeResourceLoadErrorMessage(presentation.label);
-    this._resourceErrorTitleElement.textContent = message.title;
-    this._resourceErrorContentElement.textContent = message.content;
-    this._resourceErrorRetryButton.textContent = message.retry;
-    this._resourceErrorRetryButton.onclick = () => presentation.retry();
-    this._resourceErrorElement.hidden = false;
-  }
+  showResourceLoadError: Presenter['showResourceLoadError'] = (presentation) => {
+    this._presenter.showResourceLoadError(presentation);
+  };
 
   hideResourceLoadError() {
-    this._resourceErrorElement.hidden = true;
-    this._resourceErrorTitleElement.textContent = '';
-    this._resourceErrorContentElement.textContent = '';
-    this._resourceErrorRetryButton.onclick = null;
+    this._presenter.hideResourceLoadError();
   }
 
-  showResourceLoading(_presentation: BlockingResourceWaitPresentation) {
-    if (!this._resourceErrorElement.hidden) return;
-
-    this._completeBootStatus();
-    const message = localizeResourceLoadingMessage();
-    this._resourceLoadingLabelElement.textContent = message.label;
-    this._resourceLoadingElement.hidden = false;
-  }
+  showResourceLoading: Presenter['showResourceLoading'] = (presentation) => {
+    this._presenter.showResourceLoading(presentation);
+  };
 
   hideResourceLoading() {
-    this._resourceLoadingElement.hidden = true;
-    this._resourceLoadingLabelElement.textContent = '';
+    this._presenter.hideResourceLoading();
   }
 
   recordDebugEvent(label: string) {
@@ -898,6 +851,7 @@ export class App {
   }
 
   debugSnapshot(): DebugSnapshot {
+    const presenterSnapshot = this._presenter.snapshot();
     return {
       bitmapCount: this._record.bitmap.size,
       spriteCount: this._record.sprite.size,
@@ -908,10 +862,10 @@ export class App {
       visibleTilemapCount: countVisible(this._record.tilemap),
       windowCount: this._record.window.size,
       visibleWindowCount: countVisible(this._record.window),
-      messageOpen: this.isMessageOpen(),
-      runtimeErrorOpen: !this._runtimeErrorElement.hidden,
-      resourceErrorOpen: !this._resourceErrorElement.hidden,
-      resourceLoadingOpen: !this._resourceLoadingElement.hidden,
+      messageOpen: presenterSnapshot.messageOpen,
+      runtimeErrorOpen: presenterSnapshot.runtimeErrorOpen,
+      resourceErrorOpen: presenterSnapshot.resourceErrorOpen,
+      resourceLoadingOpen: presenterSnapshot.resourceLoadingOpen,
       documentHasFocus: document.hasFocus(),
       activeElementTag: document.activeElement?.tagName ?? '',
       keyState: { ...this._lastKeyState },
@@ -958,77 +912,7 @@ export class App {
     this._refreshBrightnessOverlay();
     this._refreshFrozenSpriteLayout();
 
-    this._messageElement = document.createElement('div');
-    this._messageElement.className = 'message-window';
-    this._messageElement.hidden = true;
-
-    this._messageContentElement = document.createElement('div');
-    this._messageContentElement.className = 'message-window__content';
-    this._messageElement.appendChild(this._messageContentElement);
-
-    const hint = document.createElement('div');
-    hint.className = 'message-window__hint';
-    hint.textContent = 'Z / Enter';
-    this._messageElement.appendChild(hint);
-
-    this._screenElement.appendChild(this._messageElement);
-
-    this._runtimeErrorElement = document.createElement('div');
-    this._runtimeErrorElement.className = 'runtime-error';
-    this._runtimeErrorElement.hidden = true;
-
-    const title = document.createElement('div');
-    title.className = 'runtime-error__title';
-    title.textContent = 'Runtime Error';
-    this._runtimeErrorElement.appendChild(title);
-
-    this._runtimeErrorContentElement = document.createElement('pre');
-    this._runtimeErrorContentElement.className = 'runtime-error__content';
-    this._runtimeErrorElement.appendChild(this._runtimeErrorContentElement);
-
-    this._screenElement.appendChild(this._runtimeErrorElement);
-
-    this._resourceLoadingElement = document.createElement('div');
-    this._resourceLoadingElement.className = 'resource-loading';
-    this._resourceLoadingElement.hidden = true;
-
-    const resourceLoadingInnerElement = document.createElement('div');
-    resourceLoadingInnerElement.className = 'resource-loading__inner';
-    this._resourceLoadingElement.appendChild(resourceLoadingInnerElement);
-
-    const resourceLoadingSpinnerElement = document.createElement('div');
-    resourceLoadingSpinnerElement.className = 'resource-loading__spinner';
-    resourceLoadingInnerElement.appendChild(resourceLoadingSpinnerElement);
-
-    this._resourceLoadingLabelElement = document.createElement('div');
-    this._resourceLoadingLabelElement.className = 'resource-loading__label';
-    resourceLoadingInnerElement.appendChild(this._resourceLoadingLabelElement);
-
-    this._screenElement.appendChild(this._resourceLoadingElement);
-
-    this._resourceErrorElement = document.createElement('div');
-    this._resourceErrorElement.className = 'resource-error';
-    this._resourceErrorElement.hidden = true;
-
-    const resourceErrorInnerElement = document.createElement('div');
-    resourceErrorInnerElement.className = 'resource-error__inner';
-    this._resourceErrorElement.appendChild(resourceErrorInnerElement);
-
-    this._resourceErrorTitleElement = document.createElement('div');
-    this._resourceErrorTitleElement.className = 'resource-error__title';
-    resourceErrorInnerElement.appendChild(this._resourceErrorTitleElement);
-
-    this._resourceErrorContentElement = document.createElement('div');
-    this._resourceErrorContentElement.className = 'resource-error__content';
-    resourceErrorInnerElement.appendChild(this._resourceErrorContentElement);
-
-    this._resourceErrorRetryButton = document.createElement('button');
-    this._resourceErrorRetryButton.className = 'resource-error__retry';
-    this._resourceErrorRetryButton.type = 'button';
-    this._resourceErrorRetryButton.textContent = 'リトライする';
-    resourceErrorInnerElement.appendChild(this._resourceErrorRetryButton);
-
-    this._screenElement.appendChild(this._resourceErrorElement);
+    this._presenter.mount({ screenElement: this._screenElement });
     configureBlockingResourceWaitPresenter({
       showBlockingResourceWait: (presentation) => this.showResourceLoading(presentation),
       hideBlockingResourceWait: () => this.hideResourceLoading(),
@@ -1046,11 +930,6 @@ export class App {
     window.addEventListener('pointerdown', this._onWindowPointerDown, { passive: true });
     window.addEventListener('keydown', () => this._resumeAudioContext());
     window.addEventListener('touchstart', () => this._resumeAudioContext(), { passive: true });
-  }
-
-  private _completeBootStatus() {
-    this._bootStatusElement?.remove();
-    this._bootStatusElement = null;
   }
 
   private _withBridgeTrace<T>(label: string, callback: () => T): T {
@@ -1323,39 +1202,6 @@ const rgssAudioPosToSeconds = (value: number | null | undefined) => {
 
 const secondsToRgssAudioPos = (value: number) => {
   return Math.max(0, (Number(value) || 0) * 1000);
-};
-
-const localizeResourceLoadErrorMessage = (label: string) => {
-  if (browserPrefersJapanese()) {
-    return {
-      title: `読み込みエラー: ${label}`,
-      content: 'ファイルの読み込みに失敗しました。\nネットワーク状況を確認して、リトライしてください。',
-      retry: 'リトライする',
-    };
-  }
-
-  return {
-    title: `Loading Error: ${label}`,
-    content: 'Failed to load the file.\nCheck your network connection and try again.',
-    retry: 'Retry',
-  };
-};
-
-const localizeResourceLoadingMessage = () => {
-  if (browserPrefersJapanese()) {
-    return {
-      label: '読み込み中...',
-    };
-  }
-
-  return {
-    label: 'Loading...',
-  };
-};
-
-const browserPrefersJapanese = () => {
-  const languages = [...(navigator.languages ?? []), navigator.language].filter(Boolean);
-  return languages.some((language) => language.toLowerCase().startsWith('ja'));
 };
 
 const createScaledMaskCanvas = (image: HTMLImageElement, width: number, height: number) => {

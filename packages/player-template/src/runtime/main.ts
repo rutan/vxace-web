@@ -1,7 +1,7 @@
 import { DefaultRubyVM } from '@ruby/4.0-wasm-wasi/dist/browser';
 import { GameManifest, GameManifestJson } from '@rutan/rpgmaker-vxace-web-game-manifest';
 import rubyWasm from '../../node_modules/@ruby/4.0-wasm-wasi/dist/ruby+stdlib.wasm?url';
-import { App, GameAssetProvider, loadGameManifest, preloadManifestFonts } from './core';
+import { App, createDefaultPresenter, GameAssetProvider, loadGameManifest, preloadManifestFonts } from './core';
 import { rubyCode, rubyRuntimeCode } from './ruby';
 import { RubyEvalError, RubyManager } from './RubyManager';
 import './style.css';
@@ -16,8 +16,7 @@ type RuntimeWindow = Window & {
 };
 
 const appElement = document.querySelector<HTMLDivElement>('#app')!;
-const bootStatusElement = appElement.querySelector<HTMLElement>('.boot-status');
-const bootStatusMessageElement = appElement.querySelector<HTMLElement>('.boot-status__message');
+const presenter = createDefaultPresenter({ appElement });
 let app: App | null = null;
 
 function resolveGameDir(search: string) {
@@ -36,12 +35,6 @@ function shouldLoadGuestScripts(search: string) {
   return params.get('guest') !== '0';
 }
 
-const setBootStatusMessage = (message: string) => {
-  if (bootStatusMessageElement) {
-    bootStatusMessageElement.textContent = message;
-  }
-};
-
 const showRuntimeError = (error: unknown) => {
   const message = formatRuntimeError(error);
   console.error(error);
@@ -51,14 +44,7 @@ const showRuntimeError = (error: unknown) => {
     return;
   }
 
-  showBootError(message);
-};
-
-const showBootError = (message: string) => {
-  if (!bootStatusElement || !bootStatusMessageElement) return;
-
-  bootStatusMessageElement.classList.add('boot-status__message--error');
-  bootStatusMessageElement.textContent = message;
+  presenter.showBootError(message);
 };
 
 window.addEventListener('error', (event) => {
@@ -70,7 +56,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
 void (async () => {
   try {
-    setBootStatusMessage('Loading game manifest...');
+    presenter.showBootStatus({ phase: 'loadingManifest' });
 
     const gameDir = resolveGameDir(window.location.search);
     const gameManifest = (window as RuntimeWindow).RPGVXAceWeb?.resolveManifest
@@ -93,10 +79,10 @@ void (async () => {
       document.title = gameManifest.metadata.title;
     }
 
-    setBootStatusMessage('Loading fonts...');
+    presenter.showBootStatus({ phase: 'loadingFonts' });
     const fontRenderMetrics = await preloadManifestFonts(assetProvider);
 
-    setBootStatusMessage('Loading Ruby runtime...');
+    presenter.showBootStatus({ phase: 'loadingRubyRuntime' });
     const response = await fetch(rubyWasm);
     if (!response.ok) {
       const statusText = response.statusText ? ` ${response.statusText}` : '';
@@ -105,7 +91,7 @@ void (async () => {
     const buffer = await response.arrayBuffer();
     const module = await WebAssembly.compile(buffer);
 
-    setBootStatusMessage('Initializing Ruby VM...');
+    presenter.showBootStatus({ phase: 'initializingRubyVm' });
     const { vm } = await DefaultRubyVM(module);
     vm.printVersion();
 
@@ -113,8 +99,8 @@ void (async () => {
     app = new App({
       assetProvider,
       element: appElement,
-      bootStatusElement,
       fontRenderMetrics,
+      presenter,
     });
 
     (window as any).rubyBridge = {
@@ -125,7 +111,7 @@ void (async () => {
       utils,
     };
 
-    setBootStatusMessage('Starting game...');
+    presenter.showBootStatus({ phase: 'startingGame' });
     const screenBootstrapCode = `Graphics.resize_screen(${gameManifest.screen.width}, ${gameManifest.screen.height})`;
     const runtimeOnlyBootstrapCode = [
       rubyRuntimeCode,
