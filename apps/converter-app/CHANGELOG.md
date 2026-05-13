@@ -1,5 +1,12 @@
 # rpgmaker-vxace-web-converter-app
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rutan/rpgmaker-vxace-web-converter-core@0.0.2
+
 ## 0.1.1
 
 ### Patch Changes

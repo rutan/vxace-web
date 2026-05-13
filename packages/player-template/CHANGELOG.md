@@ -1,5 +1,11 @@
 # @rutan/rpgmaker-vxace-web-player-template
 
+## 0.0.2
+
+### Patch Changes
+
+- [#10](https://github.com/rutan/vxace-web/pull/10) [`a385671`](https://github.com/rutan/vxace-web/commit/a3856718ee6df1ecb75771df2b7190f6740b2264) Thanks [@rutan](https://github.com/rutan)! - Implement presenter
+
 ## 0.0.1
 
 ### Patch Changes
