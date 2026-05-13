@@ -105,6 +105,8 @@ type FontTable = {
   length: number;
 };
 
+const MAX_SFNT_TABLE_COUNT = 1024;
+
 const readSfntOffset = (view: DataView) => {
   if (view.byteLength < 12) return null;
 
@@ -126,10 +128,11 @@ const readTableDirectory = (view: DataView, fontOffset: number) => {
   const tables = new Map<string, FontTable>();
   if (fontOffset < 0 || fontOffset + 12 > view.byteLength) return tables;
 
-  const tableCount = view.getUint16(fontOffset + 4, false);
+  const declaredTableCount = view.getUint16(fontOffset + 4, false);
+  const availableTableCount = Math.floor((view.byteLength - fontOffset - 12) / 16);
+  const tableCount = Math.min(declaredTableCount, availableTableCount, MAX_SFNT_TABLE_COUNT);
   for (let index = 0; index < tableCount; index += 1) {
     const recordOffset = fontOffset + 12 + index * 16;
-    if (recordOffset + 16 > view.byteLength) break;
 
     const tag = readTag(view, recordOffset);
     const offset = view.getUint32(recordOffset + 8, false);

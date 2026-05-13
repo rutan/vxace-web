@@ -33,6 +33,10 @@ describe('FontRenderMetrics', () => {
     expect(registry.resolve(['Shared Family'], { style: 'italic', weight: '400' })).toBe(italic);
     expect(registry.resolve(['Shared Family'], { style: 'italic', weight: '700' })).toBe(italic);
   });
+
+  test('ignores excessive sfnt table records', () => {
+    expect(parseFontRenderMetrics(createFontWithMetricsAfterTableLimit())).toBeNull();
+  });
 });
 
 const toArrayBuffer = (bytes: Uint8Array) => {
@@ -58,3 +62,38 @@ const metrics = (cssSizeRatio: number): FontRenderMetrics => ({
   ascentRatio: 1,
   descentRatio: 0.25,
 });
+
+const createFontWithMetricsAfterTableLimit = () => {
+  const tableLimit = 1024;
+  const tableRecordCount = tableLimit + 2;
+  const tableDirectorySize = 12 + tableRecordCount * 16;
+  const headOffset = tableDirectorySize;
+  const hheaOffset = headOffset + 20;
+  const buffer = new ArrayBuffer(hheaOffset + 10);
+  const view = new DataView(buffer);
+
+  writeTag(view, 0, '\x00\x01\x00\x00');
+  view.setUint16(4, 0xffff, false);
+
+  writeTableRecord(view, 12 + tableLimit * 16, 'head', headOffset, 20);
+  writeTableRecord(view, 12 + (tableLimit + 1) * 16, 'hhea', hheaOffset, 10);
+
+  view.setUint16(headOffset + 18, 1000, false);
+  view.setInt16(hheaOffset + 4, 800, false);
+  view.setInt16(hheaOffset + 6, -200, false);
+  view.setInt16(hheaOffset + 8, 0, false);
+
+  return buffer;
+};
+
+const writeTableRecord = (view: DataView, offset: number, tag: string, tableOffset: number, length: number) => {
+  writeTag(view, offset, tag);
+  view.setUint32(offset + 8, tableOffset, false);
+  view.setUint32(offset + 12, length, false);
+};
+
+const writeTag = (view: DataView, offset: number, tag: string) => {
+  for (let index = 0; index < 4; index += 1) {
+    view.setUint8(offset + index, tag.charCodeAt(index));
+  }
+};
