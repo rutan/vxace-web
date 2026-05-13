@@ -205,8 +205,8 @@ test.describe('graphics bridge', () => {
           url: 'game/Graphics/Faces/Actor1.png',
           label: 'Graphics/Faces/Actor1.png',
           attempt: 1,
-          message: '',
-          detail: '',
+          status: null,
+          causeMessage: '',
           retry: () => undefined,
         });
         return {
