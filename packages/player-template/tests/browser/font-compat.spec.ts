@@ -48,6 +48,65 @@ test.describe('font compatibility', () => {
     expect(result.browserLoaded).toBe(true);
     await expectNoRuntimeError(page);
   });
+
+  test('memoizes resolved render metrics per font variant', async ({ page }) => {
+    await loadGame(page, { gameDir: 'demo', guest: false, settleMs: 500 });
+
+    const result = await page.evaluate(async () => {
+      const app = (window as any).rubyBridge.app;
+      const originalResolveFontRenderMetrics = app.resolveFontRenderMetrics.bind(app);
+      const calls: Array<{ names: string[]; descriptor: { style?: string; weight?: string } }> = [];
+      app.resolveFontRenderMetrics = (serializedNames: string, serializedDescriptor?: string) => {
+        calls.push({
+          names: JSON.parse(serializedNames),
+          descriptor: serializedDescriptor ? JSON.parse(serializedDescriptor) : {},
+        });
+        return originalResolveFontRenderMetrics(serializedNames, serializedDescriptor);
+      };
+
+      try {
+        const rubyManager = (window as any).rubyBridge.rubyManager;
+        const value = await rubyManager.evalAsync(
+          `
+          font = Font.new(['Missing Font', 'VL Gothic'], 20)
+          first = font.__to_css_font
+          second = font.__to_css_font
+          font.size = 30
+          resized = font.__to_css_font
+          font.bold = true
+          bold = font.__to_css_font
+          font.name = 'VL Gothic'
+          renamed = font.__to_css_font
+          JSON.generate({
+            first: first,
+            second: second,
+            resized: resized,
+            bold: bold,
+            renamed: renamed
+          })
+        `,
+          'test-font-render-metrics-cache',
+        );
+
+        return {
+          ruby: JSON.parse(value.toString()),
+          calls,
+        };
+      } finally {
+        app.resolveFontRenderMetrics = originalResolveFontRenderMetrics;
+      }
+    });
+
+    expect(result.ruby.first).toBe(result.ruby.second);
+    expect(result.ruby.resized).toContain('23.62px');
+    expect(result.ruby.bold).toContain('bold');
+    expect(result.calls).toEqual([
+      { names: ['Missing Font', 'VL Gothic'], descriptor: { style: 'normal', weight: '400' } },
+      { names: ['Missing Font', 'VL Gothic'], descriptor: { style: 'normal', weight: '700' } },
+      { names: ['VL Gothic'], descriptor: { style: 'normal', weight: '700' } },
+    ]);
+    await expectNoRuntimeError(page);
+  });
 });
 
 const readRgbaAlpha = (value: string) => {

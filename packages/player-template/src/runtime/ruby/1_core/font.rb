@@ -145,14 +145,24 @@ class Font
   end
 
   def __font_render_metrics
-    JSON.parse(
-      JS.global[:rubyBridge][:app].resolveFontRenderMetrics(
-        JSON.generate(__font_names.map(&:to_s)),
-        JSON.generate({ style: __css_font_style, weight: __css_font_weight })
-      ).to_s
-    )
+    key = __font_render_metrics_key
+    return @__font_render_metrics_cache if @__font_render_metrics_cache_key == key && @__font_render_metrics_cache
+
+    @__font_render_metrics_cache_key = key
+    @__font_render_metrics_cache =
+      JSON.parse(
+        JS.global[:rubyBridge][:app].resolveFontRenderMetrics(
+          JSON.generate(key[0]),
+          JSON.generate({ style: key[1], weight: key[2] })
+        ).to_s
+      )
   rescue StandardError
-    { 'cssSizeRatio' => CSS_FONT_SIZE_RATIO }
+    @__font_render_metrics_cache_key = key
+    @__font_render_metrics_cache = { 'cssSizeRatio' => CSS_FONT_SIZE_RATIO }
+  end
+
+  def __font_render_metrics_key
+    [__font_names.map(&:to_s), __css_font_style, __css_font_weight]
   end
 
   def __css_font_style
