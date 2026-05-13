@@ -7,6 +7,11 @@ import {
   type BlockingResourceWaitPresentation,
 } from '../utils/blockingResourceWait';
 import { configureResourceLoadErrorPresenter, type ResourceLoadErrorPresentation } from '../utils/resourceRetry';
+import {
+  FALLBACK_FONT_RENDER_METRICS,
+  FontRenderMetricsRegistry,
+  type FontRenderMetricsDescriptor,
+} from './FontRenderMetrics';
 import { GameAssetProvider } from './GameAssetProvider';
 import { KeyManager } from './KeyManager';
 import { RgssDisplayList } from './RgssDisplayList';
@@ -25,6 +30,7 @@ export interface AppParameters {
   assetProvider: GameAssetProvider;
   element: HTMLElement;
   bootStatusElement?: HTMLElement | null;
+  fontRenderMetrics?: FontRenderMetricsRegistry;
 }
 
 type DebugSnapshot = {
@@ -103,6 +109,7 @@ export class App {
   private _record: RecordObj;
   private readonly _assetProvider: GameAssetProvider;
   private readonly _gameManifest: GameManifest;
+  private readonly _fontRenderMetrics: FontRenderMetricsRegistry;
   private readonly _keyManager: KeyManager;
   private _lastKeyState: Record<string, number>;
   private _lastBridgeEvent: string;
@@ -121,6 +128,7 @@ export class App {
     this._params = params;
     this._assetProvider = params.assetProvider;
     this._gameManifest = params.assetProvider.manifest;
+    this._fontRenderMetrics = params.fontRenderMetrics ?? new FontRenderMetricsRegistry();
     this._bootStatusElement = params.bootStatusElement ?? null;
     this._record = {
       bitmap: new Map(),
@@ -261,6 +269,15 @@ export class App {
     if (!Array.isArray(names)) return '[]';
 
     return JSON.stringify(this._gameManifest.resolveFontFamilies(names.map((name) => String(name))));
+  }
+
+  resolveFontRenderMetrics(serializedNames: string, serializedDescriptor?: string) {
+    const names = parseJson<string[]>('font render metrics', serializedNames);
+    if (!Array.isArray(names)) return JSON.stringify(FALLBACK_FONT_RENDER_METRICS);
+
+    const descriptor = serializedDescriptor ? parseFontRenderMetricsDescriptor(serializedDescriptor) : {};
+    const families = this._gameManifest.resolveFontFamilies(names.map((name) => String(name)));
+    return JSON.stringify(this._fontRenderMetrics.resolve(families.length > 0 ? families : names, descriptor));
   }
 
   getProperty(type: keyof RecordObj, id: number, prop: string) {
@@ -1275,6 +1292,17 @@ const parseJson = <T>(label: string, source: string): T => {
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`invalid ${label}: ${detail}`);
   }
+};
+
+const parseFontRenderMetricsDescriptor = (source: string): FontRenderMetricsDescriptor => {
+  const value = parseJson<unknown>('font render metrics descriptor', source);
+  if (!value || typeof value !== 'object') return {};
+
+  const record = value as Record<string, unknown>;
+  return {
+    style: typeof record.style === 'string' ? record.style : undefined,
+    weight: typeof record.weight === 'string' ? record.weight : undefined,
+  };
 };
 
 const waitMs = (milliseconds: number) => {

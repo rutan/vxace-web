@@ -57,8 +57,10 @@ export class TkBitmap {
     this._ctx.font = cssFont;
 
     const ms = this._ctx.measureText(str);
-    const strWidth = Math.min(ms.width, width);
-    const px = align === 0 ? x : align === 1 ? x + (width - strWidth) / 2 : x + width - strWidth;
+    const textLayoutWidth = resolveTextLayoutWidth(ms, outline);
+    const textScaleX = resolveTextScaleX(textLayoutWidth, width);
+    const fittedWidth = textLayoutWidth * textScaleX;
+    const px = align === 0 ? x : align === 1 ? x + (width - fittedWidth) / 2 : x + width - fittedWidth;
     const padding = 4;
     const renderScale = TEXT_RENDER_SCALE;
     const renderWidth = Math.max(1, Math.ceil((width + padding * 2) * renderScale));
@@ -70,25 +72,31 @@ export class TkBitmap {
     const renderContext = renderCanvas.getContext('2d')!;
     renderContext.scale(renderScale, renderScale);
     renderContext.font = cssFont;
-    renderContext.textBaseline = 'middle';
+    const baseline = resolveTextBaseline(renderContext, str, height, padding);
+    renderContext.textBaseline = baseline.kind;
     renderContext.textAlign = 'left';
     renderContext.lineJoin = 'round';
+    renderContext.beginPath();
+    renderContext.rect(padding, padding, width, height);
+    renderContext.clip();
 
     const localX = px - x + padding;
-    const localY = height / 2 + padding;
+    const localY = baseline.y;
+    renderContext.translate(localX, localY);
+    renderContext.scale(textScaleX, 1);
     if (shadow) {
       renderContext.fillStyle = shadowColor;
-      renderContext.fillText(str, localX + 2, localY + 2, strWidth);
+      renderContext.fillText(str, 2 / textScaleX, 2);
     }
 
     if (outline) {
       renderContext.strokeStyle = outColor;
-      renderContext.lineWidth = 2;
-      renderContext.strokeText(str, localX, localY, strWidth);
+      renderContext.lineWidth = 2.5;
+      renderContext.strokeText(str, 0, 0);
     }
 
     renderContext.fillStyle = color;
-    renderContext.fillText(str, localX, localY, strWidth);
+    renderContext.fillText(str, 0, 0);
 
     this._ctx.imageSmoothingEnabled = true;
     this._ctx.imageSmoothingQuality = 'high';
@@ -423,6 +431,41 @@ const recordBitmapEvent = (label: string) => {
   (window as any).rubyBridge?.app?.recordDebugEvent?.(label);
 };
 
+const resolveTextBaseline = (context: CanvasRenderingContext2D, str: string, height: number, padding: number) => {
+  const metrics = context.measureText(str);
+  const ascent = metrics.fontBoundingBoxAscent;
+  const descent = metrics.fontBoundingBoxDescent;
+  if (Number.isFinite(ascent) && Number.isFinite(descent) && ascent + descent > 0) {
+    return {
+      kind: 'alphabetic' as CanvasTextBaseline,
+      y: padding + height / 2 + (ascent - descent) / 2 + RGSS_TEXT_BASELINE_OFFSET_Y,
+    };
+  }
+
+  return {
+    kind: 'middle' as CanvasTextBaseline,
+    y: padding + height / 2 + RGSS_TEXT_BASELINE_OFFSET_Y,
+  };
+};
+
+const resolveTextLayoutWidth = (metrics: TextMetrics, outline: boolean) => {
+  const inkWidth = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
+  const outlineWidth = outline ? 2 : 0;
+  if (Number.isFinite(inkWidth) && inkWidth > 0) {
+    return Math.max(metrics.width, inkWidth + outlineWidth);
+  }
+
+  return metrics.width + outlineWidth;
+};
+
+const resolveTextScaleX = (textWidth: number, rectWidth: number) => {
+  if (textWidth <= 0 || rectWidth <= 0) return 1;
+  if (textWidth <= rectWidth) return 1;
+  return Math.max(RGSS_TEXT_MIN_SCALE_X, rectWidth / textWidth);
+};
+
+const RGSS_TEXT_BASELINE_OFFSET_Y = 0;
+const RGSS_TEXT_MIN_SCALE_X = 0.6;
 const TEXT_RENDER_SCALE = 2;
 const BASE64_CHUNK_SIZE = 0x8000;
 

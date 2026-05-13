@@ -94,7 +94,7 @@ void (async () => {
     }
 
     setBootStatusMessage('Loading fonts...');
-    await preloadManifestFonts(assetProvider);
+    const fontRenderMetrics = await preloadManifestFonts(assetProvider);
 
     setBootStatusMessage('Loading Ruby runtime...');
     const response = await fetch(rubyWasm);
@@ -114,6 +114,7 @@ void (async () => {
       assetProvider,
       element: appElement,
       bootStatusElement,
+      fontRenderMetrics,
     });
 
     (window as any).rubyBridge = {

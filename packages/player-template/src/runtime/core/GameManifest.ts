@@ -1,4 +1,5 @@
 import { GameManifest, normalizeGameDir, type ManifestFontRecord } from '@rutan/rpgmaker-vxace-web-game-manifest';
+import { FontRenderMetricsRegistry, parseFontRenderMetrics } from './FontRenderMetrics';
 import type { GameAssetProvider } from './GameAssetProvider';
 
 export const loadGameManifest = async (gameDir: string) => {
@@ -16,7 +17,8 @@ export const loadGameManifest = async (gameDir: string) => {
 };
 
 export const preloadManifestFonts = async (assetProvider: GameAssetProvider) => {
-  if (typeof FontFace === 'undefined' || !('fonts' in document)) return;
+  const metricsRegistry = new FontRenderMetricsRegistry();
+  if (typeof FontFace === 'undefined' || !('fonts' in document)) return metricsRegistry;
 
   const pendingLoads: Promise<void>[] = [];
   const seen = new Set<string>();
@@ -31,17 +33,27 @@ export const preloadManifestFonts = async (assetProvider: GameAssetProvider) => 
       if (seen.has(key)) continue;
       seen.add(key);
 
-      pendingLoads.push(loadFontFace(assetProvider, font, normalizedFamily));
+      pendingLoads.push(loadFontFace(assetProvider, font, normalizedFamily, metricsRegistry));
     }
   }
 
   await Promise.all(pendingLoads);
+  return metricsRegistry;
 };
 
-const loadFontFace = async (assetProvider: GameAssetProvider, font: ManifestFontRecord, family: string) => {
+const loadFontFace = async (
+  assetProvider: GameAssetProvider,
+  font: ManifestFontRecord,
+  family: string,
+  metricsRegistry: FontRenderMetricsRegistry,
+) => {
   let sourceUrl: string | null = null;
   try {
-    sourceUrl = await assetProvider.createObjectUrl(font, { kind: 'data', label: family });
+    const bytes = await assetProvider.loadBytes(font, { kind: 'data', label: family });
+    const metrics = parseFontRenderMetrics(bytes);
+    if (metrics) metricsRegistry.register(font, metrics);
+
+    sourceUrl = URL.createObjectURL(new Blob([bytes], { type: fontContentType(font.extension) }));
     const face = new FontFace(family, `url(${JSON.stringify(sourceUrl)})`, {
       style: font.style,
       weight: font.weight,
@@ -52,5 +64,22 @@ const loadFontFace = async (assetProvider: GameAssetProvider, font: ManifestFont
     console.warn(`font preload failed for ${family} (${assetProvider.createCacheKey(font)})`, error);
   } finally {
     if (sourceUrl) URL.revokeObjectURL(sourceUrl);
+  }
+};
+
+const fontContentType = (extension: string) => {
+  switch (extension.toLowerCase()) {
+    case 'otf':
+      return 'font/otf';
+    case 'ttc':
+      return 'font/collection';
+    case 'ttf':
+      return 'font/ttf';
+    case 'woff':
+      return 'font/woff';
+    case 'woff2':
+      return 'font/woff2';
+    default:
+      return 'application/octet-stream';
   }
 };
