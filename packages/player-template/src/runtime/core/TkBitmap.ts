@@ -57,9 +57,9 @@ export class TkBitmap {
     this._ctx.font = cssFont;
 
     const ms = this._ctx.measureText(str);
-    const strWidth = ms.width;
-    const textScaleX = resolveTextScaleX(resolveTextLayoutWidth(ms, outline), width);
-    const fittedWidth = strWidth * textScaleX;
+    const textLayoutWidth = resolveTextLayoutWidth(ms, outline);
+    const textScaleX = resolveTextScaleX(textLayoutWidth, width);
+    const fittedWidth = textLayoutWidth * textScaleX;
     const px = align === 0 ? x : align === 1 ? x + (width - fittedWidth) / 2 : x + width - fittedWidth;
     const padding = 4;
     const renderScale = TEXT_RENDER_SCALE;
