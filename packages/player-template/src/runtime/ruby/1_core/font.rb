@@ -105,8 +105,8 @@ class Font
 
   def __to_css_font
     [
-      self.italic ? 'italic' : nil,
-      self.bold ? 'bold' : nil,
+      __css_font_style == 'italic' ? 'italic' : nil,
+      __css_font_weight == '700' ? 'bold' : nil,
       "#{__to_css_font_size}px",
       __to_css_font_family
     ].compact.join(' ')
@@ -128,25 +128,46 @@ class Font
   private
 
   def __to_css_font_size
-    [(self.size.to_i * CSS_FONT_SIZE_RATIO).round, 1].max
+    ratio = __font_render_metrics['cssSizeRatio'] || CSS_FONT_SIZE_RATIO
+    [(self.size.to_i * ratio.to_f).round(2), 1].max
   end
 
   def __to_css_font_family
-    requested_families =
-      if self.name.is_a?(Array)
-        self.name
-      else
-        [self.name]
-      end
-
     families = JSON.parse(
-      JS.global[:rubyBridge][:app].resolveFontFamilies(JSON.generate(requested_families.map(&:to_s))).to_s
+      JS.global[:rubyBridge][:app].resolveFontFamilies(JSON.generate(__font_names.map(&:to_s))).to_s
     )
 
-    families = requested_families if families.empty?
+    families = __font_names if families.empty?
 
     families
       .map { |family| "\"#{family.to_s.gsub('"', '\"')}\"" }
       .join(', ')
+  end
+
+  def __font_render_metrics
+    JSON.parse(
+      JS.global[:rubyBridge][:app].resolveFontRenderMetrics(
+        JSON.generate(__font_names.map(&:to_s)),
+        JSON.generate({ style: __css_font_style, weight: __css_font_weight })
+      ).to_s
+    )
+  rescue StandardError
+    { 'cssSizeRatio' => CSS_FONT_SIZE_RATIO }
+  end
+
+  def __css_font_style
+    self.italic ? 'italic' : 'normal'
+  end
+
+  def __css_font_weight
+    self.bold ? '700' : '400'
+  end
+
+  def __font_names
+    if self.name.is_a?(Array)
+      self.name
+    else
+      [self.name]
+    end
   end
 end

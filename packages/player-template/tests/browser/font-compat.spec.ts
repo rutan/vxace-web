@@ -22,6 +22,7 @@ test.describe('font compatibility', () => {
           family: font.__send__(:__to_css_font_family),
           fallback_family: fallback.__send__(:__to_css_font_family),
           default_css_font: Font.new.__to_css_font,
+          default_metrics: JS.global[:rubyBridge][:app].resolveFontRenderMetrics(JSON.generate(['VL Gothic'])).to_s,
           disabled_out_color: disabled_font.__to_css_out_color,
           disabled_shadow_color: disabled_font.__to_css_shadow_color
         })
@@ -40,7 +41,8 @@ test.describe('font compatibility', () => {
     expect(result.ruby.missing).toBe(false);
     expect(result.ruby.family).toBe('"VL Gothic"');
     expect(result.ruby.fallback_family).toBe('"VL Gothic"');
-    expect(result.ruby.default_css_font).toBe('18px "VL Gothic"');
+    expect(result.ruby.default_css_font).toBe('18.9px "VL Gothic"');
+    expect(JSON.parse(result.ruby.default_metrics).cssSizeRatio).toBeCloseTo(1 / 1.27);
     expect(readRgbaAlpha(result.ruby.disabled_out_color)).toBeCloseTo((128 / 255) * (160 / 255));
     expect(result.ruby.disabled_shadow_color).toBe('rgba(0, 0, 0, 0.6274509803921569)');
     expect(result.browserLoaded).toBe(true);
