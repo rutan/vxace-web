@@ -1,9 +1,12 @@
 import { ConverterWarning, FileConversionRecord } from '../types';
+import { ConversionOutput, ConversionRuntime, ConversionSource } from './environment';
 import { PackBuilder } from './packBuilder';
 
 export type ConversionContext = {
-  srcDir: string;
-  outDir: string;
+  source: ConversionSource;
+  output: ConversionOutput | undefined;
+  runtime: ConversionRuntime;
+  outputRoot: string;
   dryRun: boolean;
   files: FileConversionRecord[];
   warnings: ConverterWarning[];

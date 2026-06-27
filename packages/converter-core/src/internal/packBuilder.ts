@@ -1,6 +1,3 @@
-import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
 import type {
   ManifestPackRecord,
   ManifestResourcePackData,
@@ -8,6 +5,7 @@ import type {
 } from '@rutan/rpgmaker-vxace-web-game-manifest';
 import type { FileConversionRecord, PackEntrySummary } from '../types';
 import { PACK_ASSET_DIRNAME, PACK_ASSET_MAX_PACK_BYTES } from './constants';
+import { ConversionRuntime, ConversionSource } from './environment';
 import { stripExtension } from './utils';
 
 const PACK_TARGET_RESOURCE_TYPES: ResourceType[] = ['image', 'data', 'file'];
@@ -21,13 +19,14 @@ export interface PackBuilder {
 export interface GeneratedPackFile {
   id: string;
   path: string;
-  chunks: Buffer[];
+  chunks: Uint8Array[];
   byteLength: number;
   entries: PackEntrySummary[];
 }
 
 export interface MaterializePackedResourceInput {
-  srcDir: string;
+  source: ConversionSource;
+  runtime: ConversionRuntime;
   relativePath: string;
   resourceType: ResourceType;
   extension: string;
@@ -52,20 +51,20 @@ export const materializePackedResourceData = async (
   builder: PackBuilder,
   input: MaterializePackedResourceInput,
 ): Promise<MaterializedPackedResource> => {
-  const { extension, relativePath, resourceType, srcDir } = input;
-  const source = await readFile(join(srcDir, relativePath));
-  const packFile = getWritablePackFile(builder, source.byteLength);
+  const { extension, relativePath, resourceType, runtime, source } = input;
+  const content = await source.readFile(relativePath);
+  const packFile = getWritablePackFile(builder, content.byteLength);
   const offset = packFile.byteLength;
 
-  packFile.chunks.push(source);
-  packFile.byteLength += source.byteLength;
+  packFile.chunks.push(content);
+  packFile.byteLength += content.byteLength;
   builder.packedSourcePaths.add(relativePath);
   packFile.entries.push({
     sourcePath: relativePath,
     logicalPath: stripExtension(relativePath),
     type: toPackEntryType(resourceType),
     offset,
-    length: source.byteLength,
+    length: content.byteLength,
   });
 
   return {
@@ -73,9 +72,9 @@ export const materializePackedResourceData = async (
       kind: 'pack',
       packId: packFile.id,
       offset,
-      length: source.byteLength,
-      byteLength: source.byteLength,
-      sha256: digestHex(source),
+      length: content.byteLength,
+      byteLength: content.byteLength,
+      sha256: await runtime.sha256Hex([content]),
       contentType: inferContentType(resourceType, extension),
     },
     fileRecord: {
@@ -88,7 +87,7 @@ export const materializePackedResourceData = async (
         id: packFile.id,
         path: packFile.path,
         offset,
-        length: source.byteLength,
+        length: content.byteLength,
       },
       reason: 'asset-pack',
     },
@@ -106,24 +105,35 @@ export const buildGeneratedPackFileRecords = (builder: PackBuilder): FileConvers
   }));
 };
 
-export const writePackFiles = async (builder: PackBuilder, outDir: string) => {
+export const writePackFiles = async (options: {
+  builder: PackBuilder;
+  output: { writeFile(relativePath: string, content: Uint8Array): Promise<void> };
+  runtime: ConversionRuntime;
+}) => {
+  const { builder, output, runtime } = options;
   for (const packFile of builder.packFiles) {
-    const target = join(outDir, packFile.path);
-    await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, buildPackFileContent(packFile));
+    await output.writeFile(packFile.path, buildPackFileContent({ packFile, runtime }));
   }
 };
 
-export const buildManifestPacks = (builder: PackBuilder): Record<string, ManifestPackRecord> => {
+export const buildManifestPacks = async (options: {
+  builder: PackBuilder;
+  runtime: ConversionRuntime;
+}): Promise<Record<string, ManifestPackRecord>> => {
+  const { builder, runtime } = options;
   return Object.fromEntries(
-    builder.packFiles.map((packFile) => [
-      packFile.id,
-      {
-        path: packFile.path,
-        byteLength: packFile.byteLength,
-        sha256: digestHex(buildPackFileContent(packFile)),
-      },
-    ]),
+    await Promise.all(
+      builder.packFiles.map(
+        async (packFile): Promise<[string, ManifestPackRecord]> => [
+          packFile.id,
+          {
+            path: packFile.path,
+            byteLength: packFile.byteLength,
+            sha256: await runtime.sha256Hex([buildPackFileContent({ packFile, runtime })]),
+          },
+        ],
+      ),
+    ),
   );
 };
 
@@ -148,8 +158,9 @@ const getWritablePackFile = (builder: PackBuilder, nextByteLength: number) => {
   return packFile;
 };
 
-const buildPackFileContent = (packFile: GeneratedPackFile) => {
-  return Buffer.concat(packFile.chunks, packFile.byteLength);
+const buildPackFileContent = (options: { packFile: GeneratedPackFile; runtime: ConversionRuntime }) => {
+  const { packFile, runtime } = options;
+  return runtime.concatBytes(packFile.chunks, packFile.byteLength);
 };
 
 const toFileConversionType = (resourceType: ResourceType): FileConversionRecord['type'] => {
@@ -159,10 +170,6 @@ const toFileConversionType = (resourceType: ResourceType): FileConversionRecord[
 const toPackEntryType = (resourceType: ResourceType): PackEntrySummary['type'] => {
   if (resourceType === 'image' || resourceType === 'audio' || resourceType === 'data') return resourceType;
   return 'file';
-};
-
-const digestHex = (content: Buffer | Uint8Array) => {
-  return createHash('sha256').update(content).digest('hex');
 };
 
 const inferContentType = (resourceType: ResourceType, extension: string) => {
