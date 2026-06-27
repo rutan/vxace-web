@@ -1,0 +1,637 @@
+.app {
+  min-width: 0;
+}
+
+.shell {
+  width: min(100% - (var(--page-gutter) * 2), var(--page-max-width));
+  margin-inline: auto;
+}
+
+.intro {
+  padding-block: 3rem clamp(2.5rem, 6vw, 4rem);
+  border-bottom: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 56%, transparent);
+}
+
+.intro h1 {
+  margin: 0.45rem 0 0;
+  color: var(--color-text);
+  font-size: 3rem;
+  line-height: 1.25;
+  letter-spacing: 0;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+}
+
+.intro p:not(.eyebrow) {
+  margin: 1.25rem 0 0;
+  color: var(--color-muted);
+  font-size: clamp(1rem, 2vw, 1.18rem);
+  line-height: 1.9;
+}
+
+.eyebrow,
+.step {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.sections {
+  display: grid;
+  gap: clamp(4rem, 8vw, 7rem);
+  padding-block: clamp(3rem, 7vw, 5rem) clamp(4rem, 8vw, 7rem);
+}
+
+.section {
+  min-width: 0;
+}
+
+.sectionBand {
+  padding-block: clamp(3rem, 7vw, 5rem);
+  border-block: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 74%, transparent);
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+}
+
+.sectionHeading {
+  min-width: 0;
+}
+
+.sectionHeading h2 {
+  margin: 0.35rem 0 0;
+  color: var(--color-text);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 1.16;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.sectionBody {
+  min-width: 0;
+  color: var(--color-muted);
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.sectionBody p {
+  margin: 0;
+}
+
+.stepFieldset {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.stepFieldset:disabled {
+  opacity: 0.5;
+}
+
+.preparationList {
+  display: grid;
+  min-width: 0;
+  gap: 0.85rem;
+  margin: 1em 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preparationItem {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.8rem;
+  padding: 0.85rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-raised) 58%, var(--color-surface));
+}
+
+.preparationNumber {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  color: var(--color-accent);
+  background: var(--color-surface);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.preparationItem h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.preparationItem p {
+  margin-top: 0.28rem;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.projectSelectionStack,
+.dropzone,
+.advancedSettingsStack,
+.conversionStack {
+  display: grid;
+  max-width: 100%;
+  min-width: 0;
+  gap: 1rem;
+}
+
+.dropzone {
+  min-height: clamp(16rem, 34vw, 22rem);
+  place-items: center;
+  padding: clamp(1.4rem, 4vw, 2.5rem);
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.dragActive {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-accent) 24%, transparent),
+    var(--shadow-soft);
+}
+
+.dropzoneContent {
+  display: grid;
+  width: min(100%, 28rem);
+  justify-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.dropzoneIcon {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.dropzoneIcon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.successIcon {
+  border-color: #86c7ac;
+  color: #16613f;
+  background: color-mix(in srgb, #e5f6ed 76%, var(--color-surface));
+}
+
+.dropzoneText {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.dropzoneText h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+  line-height: 1.35;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.dropzoneText p {
+  color: var(--color-muted);
+  font-size: 0.98rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.button {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.58rem 0.9rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: normal;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.button svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.primaryButton,
+.conversionActionButton {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.primaryButton:hover:not(:disabled),
+.conversionActionButton:hover:not(:disabled) {
+  border-color: var(--color-accent-strong);
+  background: var(--color-accent-strong);
+}
+
+.secondaryButton {
+  background: color-mix(in srgb, var(--color-surface-raised) 52%, var(--color-surface));
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.summaryMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.summaryMetric {
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-raised) 68%, var(--color-surface));
+}
+
+.summaryMetricLabel {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.summaryMetricValue {
+  overflow: hidden;
+  margin-top: 0.2rem;
+  color: var(--color-text);
+  font-weight: 800;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.formGrid {
+  display: grid;
+  max-width: 100%;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.advancedSetting {
+  display: grid;
+  min-width: 0;
+  gap: 0.8rem;
+  padding: 0.85rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-raised) 58%, var(--color-surface));
+}
+
+.advancedSettingHeader {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.advancedSettingHeader input {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 0.18rem;
+  accent-color: var(--color-accent);
+}
+
+.advancedSettingText,
+.advancedSettingBody {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.advancedSettingBody {
+  padding-left: 1.75rem;
+}
+
+.htmlImportActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fieldLabel,
+.advancedSettingLabel {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.fieldDescription,
+.advancedSettingDescription,
+.fieldWarning {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.fieldDescription,
+.advancedSettingDescription {
+  color: var(--color-muted);
+}
+
+.fieldWarning {
+  color: #9a5b13;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.screenSizeInputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.screenSizeInputs span {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.field textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.field textarea:disabled {
+  color: var(--color-muted);
+  background: color-mix(in srgb, var(--color-surface-raised) 78%, var(--color-surface));
+}
+
+.message {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.message svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: flex-start;
+  border: 1px solid #e3a2a2;
+  background: color-mix(in srgb, #fce8e8 72%, var(--color-surface));
+  color: #8a2424;
+}
+
+.successMessage {
+  border: 1px solid #86c7ac;
+  background: color-mix(in srgb, #e5f6ed 72%, var(--color-surface));
+  color: #123e2a;
+}
+
+.summaryDetails {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.summaryItem {
+  display: grid;
+  gap: 0.18rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, #86c7ac 42%, transparent);
+}
+
+.summaryItem dt {
+  color: color-mix(in srgb, #123e2a 68%, var(--color-muted));
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.summaryItem dd {
+  min-width: 0;
+  margin: 0;
+  color: #123e2a;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.monoValue {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+}
+
+.messageTitle {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.warningList {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.conversionActionBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding-block: 1rem;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.conversionActions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.previewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: #050505;
+}
+
+.previewToolbar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem max(1rem, env(safe-area-inset-right)) 0.75rem max(1rem, env(safe-area-inset-left));
+  border-bottom: 1px solid color-mix(in srgb, #ffffff 18%, transparent);
+  background: color-mix(in srgb, #111111 92%, transparent);
+}
+
+.previewToolbar h3 {
+  margin: 0;
+  color: #f6f3e8;
+  font-size: 1rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.previewViewport {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  background: #000;
+}
+
+.previewFrame {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  background: #000;
+}
+
+.iconPulse {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.46;
+  }
+}
+
+@media (max-width: 820px) {
+  .sectionGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .intro h1 {
+    max-width: 10ch;
+    font-size: clamp(2.35rem, 12vw, 3.25rem);
+  }
+
+  .summaryMetrics {
+    grid-template-columns: 1fr;
+  }
+
+  .conversionActionBar {
+    justify-content: stretch;
+  }
+
+  .conversionActions {
+    width: 100%;
+  }
+
+  .conversionActionBar .button,
+  .dropzoneContent .button,
+  .htmlImportActions .button {
+    width: 100%;
+  }
+
+  .advancedSettingBody {
+    padding-left: 0;
+  }
+}

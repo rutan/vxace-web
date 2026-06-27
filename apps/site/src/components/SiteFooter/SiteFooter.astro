@@ -1,0 +1,56 @@
+---
+type Props = {
+  brand: string;
+  copy: {
+    note: string;
+  };
+};
+
+const { brand, copy } = Astro.props;
+---
+
+<footer class="site-footer">
+  <div class="site-footer-inner page-shell">
+    <p class="site-footer-brand">{brand}</p>
+    <p class="site-footer-note">{copy.note}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-bg);
+  }
+
+  .site-footer-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    color: var(--color-muted);
+  }
+
+  .site-footer-brand,
+  .site-footer-note {
+    margin: 0;
+  }
+
+  .site-footer-brand {
+    flex: 0 0 auto;
+    color: var(--color-text);
+    font-weight: 800;
+  }
+
+  .site-footer-note {
+    max-width: 44rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 760px) {
+    .site-footer-inner {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+  }
+</style>

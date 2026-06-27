@@ -27,6 +27,11 @@ jobs:
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node
 
+      - name: Build converter web
+        run: pnpm turbo run build --filter rpgmaker-vxace-web-site
+        env:
+          VITE_BASE_PATH: /vxace-web/
+
       - name: Build playground
         run: pnpm turbo run build --filter rpgmaker-vxace-web-playground
         env:
@@ -37,25 +42,10 @@ jobs:
         run: |
           set -euo pipefail
 
+          mkdir -p pages
+          cp -R apps/site/dist/. pages/
           mkdir -p pages/playground
           cp -R apps/playground/dist/. pages/playground/
-          cat > pages/index.html <<'HTML'
-          <!doctype html>
-          <html lang="ja">
-            <head>
-              <meta charset="utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1" />
-              <title>vxace-web</title>
-            </head>
-            <body>
-              <main>
-                <h1>vxace-web</h1>
-                <p>Teaser page is coming soon.</p>
-                <p><a href="./playground/">Open playground</a></p>
-              </main>
-            </body>
-          </html>
-          HTML
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 #v5.0.0

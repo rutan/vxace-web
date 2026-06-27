@@ -1,0 +1,480 @@
+---
+import { BaseLayout } from "$layouts";
+import type { I18nLang } from "$types";
+import { Demo } from "../../features/demo";
+import { getLocalizedPath, siteCopy } from "$i18n";
+
+type Props = {
+  lang: I18nLang;
+};
+
+const { lang } = Astro.props;
+const copy = siteCopy[lang];
+const converterPath = getLocalizedPath(lang, "converter");
+const githubUrl = "https://github.com/rutan/vxace-web";
+const packageUrls: Record<string, string> = {
+  "@rutan/rpgmaker-vxace-web-player-template": "https://www.npmjs.com/package/@rutan/rpgmaker-vxace-web-player-template",
+  "@rutan/rpgmaker-vxace-web-converter-core": "https://www.npmjs.com/package/@rutan/rpgmaker-vxace-web-converter-core",
+  "@rutan/rpgmaker-vxace-web-converter-cli": "https://www.npmjs.com/package/@rutan/rpgmaker-vxace-web-converter-cli",
+};
+const heroHeadingParts = Array.isArray(copy.landing.hero.heading) ? copy.landing.hero.heading : [copy.landing.hero.heading];
+---
+
+<BaseLayout
+  title={copy.landing.page.title}
+  description={copy.landing.page.description}
+  lang={lang}
+  page="home"
+>
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-content page-shell">
+      <h1 id="hero-heading">
+        {
+          heroHeadingParts.map((part, index) => (
+            <>
+              {index > 0 ? <wbr /> : null}
+              {part === "VX Ace" ? <span>{part}</span> : part}
+            </>
+          ))
+        }
+      </h1>
+      <p class="hero-copy">
+        {copy.landing.hero.copy}
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href={converterPath}>{copy.landing.hero.converterAction}</a>
+        <a class="button secondary" href={githubUrl} rel="noreferrer">{copy.landing.hero.githubAction}</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="landing-sections">
+    <section class="demo page-shell" aria-labelledby="demo-heading">
+      <div class="section-heading">
+        <h2 id="demo-heading">{copy.landing.demo.heading}</h2>
+      </div>
+      <Demo copy={copy.landing.demo} url="https://assets.toripota.com/contents/202606_vxace-web/index.html" client:load />
+    </section>
+
+    <section class="about section-band" aria-labelledby="about-heading">
+      <div class="section-grid page-shell">
+        <div class="section-heading">
+          <h2 id="about-heading">{copy.landing.about.heading}</h2>
+        </div>
+        <div class="section-body">
+          {copy.landing.about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          <p class="notice-panel">{copy.landing.about.unofficial}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mechanism page-shell" aria-labelledby="mechanism-heading">
+      <div class="section-grid">
+        <div class="section-heading">
+          <h2 id="mechanism-heading">{copy.landing.mechanism.heading}</h2>
+        </div>
+        <div class="section-body">
+          {copy.landing.mechanism.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          <div class="compatibility">
+            <h3>{copy.landing.mechanism.compatibility.heading}</h3>
+            <dl class="compatibility-list">
+              {
+                copy.landing.mechanism.compatibility.items.map((item) => (
+                  <div class="compatibility-item">
+                    <dt>{item.feature}</dt>
+                    <dd>
+                      <span>{item.status}</span>
+                      {item.notes ? (
+                        <ul>
+                          {item.notes.map((note) => (
+                            <li>
+                              {"before" in note ? note.before : null}
+                              {"codes" in note ? note.codes?.map((code, index) => (
+                                <>
+                                  {index > 0 ? " " : null}
+                                  <code>{code}</code>
+                                </>
+                              )) : null}
+                              {"after" in note ? note.after : null}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </dd>
+                  </div>
+                ))
+              }
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-to-use section-band" aria-labelledby="how-to-use-heading">
+      <div class="section-grid page-shell">
+        <div class="section-heading">
+          <h2 id="how-to-use-heading">{copy.landing.howToUse.heading}</h2>
+        </div>
+        <div class="use-case-list">
+          <section class="use-case">
+            <h3>{copy.landing.howToUse.easy.heading}</h3>
+            <p>
+              {copy.landing.howToUse.easy.body}
+            </p>
+            <a class="button primary" href={converterPath}>{copy.landing.howToUse.easy.action}</a>
+          </section>
+          <section class="use-case">
+            <h3>{copy.landing.howToUse.advanced.heading}</h3>
+            <p>
+              {copy.landing.howToUse.advanced.body}
+            </p>
+            <ul>
+              {
+                copy.landing.howToUse.advanced.packages.map((pkg) => (
+                  <li>
+                    <a href={packageUrls[pkg.name]}>{pkg.name}</a>
+                    : {pkg.description}
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="development page-shell" aria-labelledby="development-heading">
+      <div class="section-grid">
+        <div class="section-heading">
+          <h2 id="development-heading">{copy.landing.development.heading}</h2>
+        </div>
+        <div class="section-body">
+          <p>{copy.landing.development.body}</p>
+          <div class="section-actions">
+            <a class="button secondary" href={githubUrl} rel="noreferrer">{copy.landing.development.action}</a>
+          </div>
+          <div class="notice-panel development-disclaimer">
+            <p>
+              {copy.landing.development.disclaimer.beforeAuthor}<a
+                href={copy.landing.development.disclaimer.author.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {copy.landing.development.disclaimer.author.label}</a
+              >{copy.landing.development.disclaimer.afterAuthor}
+            </p>
+            <p>{copy.landing.development.disclaimer.caution}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    min-height: clamp(520px, calc(100svh - var(--header-height) - 72px), 760px);
+    align-items: end;
+    overflow: clip;
+    background:
+      linear-gradient(90deg, rgb(10 14 20 / 88%) 0%, rgb(10 14 20 / 64%) 46%, rgb(10 14 20 / 16%) 100%),
+      url("https://i.gyazo.com/0b65e5ebcab2f7749c6992ee33a5f490.jpg") center / cover no-repeat,
+      var(--color-bg);
+    color: var(--color-hero-text);
+  }
+
+  .hero::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 42%;
+    background: linear-gradient(180deg, transparent, var(--color-bg));
+    content: "";
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: var(--page-max-width);
+    padding-block: clamp(4.5rem, 12vw, 8rem) clamp(4rem, 10vw, 7rem);
+  }
+
+  .hero h1 {
+    max-width: 13ch;
+    margin: 0.75rem 0 0;
+    font-size: clamp(2.75rem, 8vw, 5.85rem);
+    line-height: 1.04;
+    letter-spacing: 0;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .hero h1 span {
+    display: inline-block;
+  }
+
+  .hero-copy {
+    max-width: 42rem;
+    margin: 1.25rem 0 0;
+    color: var(--color-hero-muted);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.9;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .hero .button.secondary {
+    border-color: rgb(255 255 255 / 32%);
+    background: rgb(255 255 255 / 10%);
+    color: #ffffff;
+  }
+
+  .landing-sections {
+    display: grid;
+    gap: clamp(4rem, 8vw, 7rem);
+    padding-block: clamp(3rem, 7vw, 5rem) clamp(4rem, 8vw, 7rem);
+  }
+
+  .section-heading {
+    min-width: 0;
+  }
+
+  .section-heading h2 {
+    margin: 0.35rem 0 0;
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    line-height: 1.16;
+    letter-spacing: 0;
+  }
+
+  .section-body {
+    color: var(--color-muted);
+    font-size: 1rem;
+    line-height: 1.9;
+  }
+
+  .section-body p {
+    margin: 0;
+  }
+
+  .section-body p + p {
+    margin-top: 1rem;
+  }
+
+  .notice-panel {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--color-warning-line);
+    border-left: 4px solid var(--color-warning);
+    background: var(--color-warning-surface);
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .notice-panel p {
+    margin: 0;
+  }
+
+  .notice-panel p + p {
+    margin-top: 0.45rem;
+  }
+
+  .notice-panel a {
+    color: inherit;
+    text-decoration-thickness: 0.08em;
+  }
+
+  .development-disclaimer {
+    margin-top: 1rem;
+  }
+
+  .section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.4rem;
+  }
+
+  .section-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+  }
+
+  .section-band {
+    padding-block: clamp(3rem, 7vw, 5rem);
+    background: color-mix(in srgb, var(--color-surface) 74%, transparent);
+    border-block: 1px solid var(--color-line);
+  }
+
+  .compatibility {
+    margin-top: 1.8rem;
+  }
+
+  .compatibility h3 {
+    margin: 0 0 0.85rem;
+    color: var(--color-text);
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .compatibility-list {
+    display: grid;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+
+  .compatibility-item {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .compatibility-item + .compatibility-item {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .compatibility-item dt,
+  .compatibility-item dd {
+    margin: 0;
+    padding: 0.9rem 1rem;
+  }
+
+  .compatibility-item dt {
+    background: color-mix(in srgb, var(--color-surface-raised) 58%, transparent);
+    color: var(--color-text);
+    font-weight: 800;
+  }
+
+  .compatibility-item dd {
+    border-left: 1px solid var(--color-line);
+  }
+
+  .compatibility-item dd > span {
+    color: var(--color-text);
+  }
+
+  .compatibility-item ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.45rem 0 0;
+    padding-left: 1.1rem;
+  }
+
+  .compatibility-item code {
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    padding: 0.08em 0.34em;
+    background: color-mix(in srgb, var(--color-surface-raised) 72%, transparent);
+    color: var(--color-text);
+    font-size: 0.92em;
+  }
+
+  .demo {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .use-case-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .use-case {
+    display: grid;
+    gap: 0.9rem;
+    padding: clamp(1.2rem, 3vw, 1.75rem);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+
+  .use-case h3,
+  .use-case p,
+  .use-case ul {
+    margin: 0;
+  }
+
+  .use-case h3 {
+    font-size: 1.15rem;
+    line-height: 1.35;
+  }
+
+  .use-case p,
+  .use-case li {
+    color: var(--color-muted);
+  }
+
+  .use-case ul {
+    display: grid;
+    gap: 0.65rem;
+    padding-left: 1.25rem;
+  }
+
+  .use-case a:not(.button) {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .use-case .button {
+    justify-self: start;
+  }
+
+  strong {
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 820px) {
+    .section-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .compatibility-item {
+      grid-template-columns: 1fr;
+    }
+
+    .compatibility-item dd {
+      border-top: 1px solid var(--color-line);
+      border-left: 0;
+      padding-block: 0.75rem 1rem;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      min-height: 560px;
+      align-items: end;
+      background:
+        linear-gradient(180deg, rgb(10 14 20 / 58%) 0%, rgb(10 14 20 / 88%) 78%),
+        url("https://i.gyazo.com/0b65e5ebcab2f7749c6992ee33a5f490.jpg") center / cover no-repeat,
+        var(--color-bg);
+    }
+
+    .hero h1 {
+      max-width: 10ch;
+      font-size: clamp(2.5rem, 15vw, 4rem);
+    }
+
+    .hero-actions {
+      flex-direction: column;
+    }
+
+    .section-actions {
+      flex-direction: column;
+    }
+
+    .use-case .button {
+      justify-self: stretch;
+    }
+  }
+</style>

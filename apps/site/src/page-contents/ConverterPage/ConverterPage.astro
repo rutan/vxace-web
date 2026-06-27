@@ -1,0 +1,22 @@
+---
+import { BaseLayout } from "$layouts";
+import type { I18nLang } from "$types";
+import { ConverterApp } from "../../features/converter";
+import { siteCopy } from "$i18n";
+
+type Props = {
+  lang: I18nLang;
+};
+
+const { lang } = Astro.props;
+const copy = siteCopy[lang];
+---
+
+<BaseLayout
+  title={copy.converter.page.title}
+  description={copy.converter.page.description}
+  lang={lang}
+  page="converter"
+>
+  <ConverterApp copy={copy.converter} lang={lang} client:load />
+</BaseLayout>

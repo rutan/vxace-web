@@ -12,7 +12,8 @@ As a general rule, the project aims to run games in the browser while maintainin
 - [converter-core](./packages/converter-core): A package that provides the core logic for converting RPG Maker VXAce games into a format suitable for web deployment, including resource packaging and manifest generation.
 - [converter-cli](./packages/converter-cli): A command-line interface for the converter that allows users to convert their RPG Maker VXAce games using the converter-core package.
 - [converter-app](./apps/converter-app): A desktop application that provides a user-friendly interface for converting RPG Maker VXAce games using the converter-core package.
-- [playground](./apps/playground): A web application for demonstrating the player template.
+- [site](./apps/site): A website that provides information about the project, including documentation and converter web.
+- [playground](./apps/playground): [deprecated] A web application for demonstrating the player template.
 
 ## Commands
 
