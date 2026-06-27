@@ -1,4 +1,3 @@
-import { parse as posixParse } from 'node:path/posix';
 import {
   GameId,
   GameManifestJson,
@@ -9,8 +8,10 @@ import {
   parseGameManifestJson,
 } from '@rutan/rpgmaker-vxace-web-game-manifest';
 import { ConverterWarning } from '../types';
+import { ConversionRuntime } from './environment';
 import { MaterializedResource } from './materializeManifestResources';
 import { buildManifestPacks, PackBuilder } from './packBuilder';
+import { posixParse } from './pathUtils';
 import { EXTENSION_PRIORITY } from './resourceType';
 import { clone, toPosix } from './utils';
 
@@ -19,6 +20,7 @@ type BuildManifestJsonOptions = {
   metadata: ManifestMetadata;
   warnings: ConverterWarning[];
   packBuilder: PackBuilder;
+  runtime: ConversionRuntime;
 };
 
 type FontManifestRecordWithSortKey = {
@@ -26,10 +28,10 @@ type FontManifestRecordWithSortKey = {
   record: ManifestFontRecord;
 };
 
-export const buildManifestJson = (
+export const buildManifestJson = async (
   materializedResources: MaterializedResource[],
   options: BuildManifestJsonOptions,
-): GameManifestJson => {
+): Promise<GameManifestJson> => {
   const resourceBuckets = new Map<string, ManifestResourceCandidate[]>();
   const fonts: FontManifestRecordWithSortKey[] = [];
 
@@ -72,7 +74,10 @@ export const buildManifestJson = (
   const fontRecords = fonts
     .sort((left, right) => left.sortKey.localeCompare(right.sortKey))
     .map(({ record }) => record);
-  const packs = buildManifestPacks(options.packBuilder);
+  const packs = await buildManifestPacks({
+    builder: options.packBuilder,
+    runtime: options.runtime,
+  });
 
   return parseGameManifestJson({
     version: 1,

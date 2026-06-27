@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { describe, expect, test } from 'vitest';
+import { nodeRuntime } from '../../src/internal/nodeEnvironment';
 import type {
   RubyMarshalArray,
   RubyMarshalBytes,
@@ -9,108 +10,109 @@ import type {
   RubyMarshalValue,
 } from '../../src/internal/rubyMarshal';
 import {
+  collectVxAceAssetReferencesWithRuntime,
   collectVxAceScriptLiteralAssetReferences,
-  collectVxAceAssetReferences,
-  collectVxAceAssetReferencesFromDataDir,
 } from '../../src/internal/vxaceAssetReferences';
+import { collectVxAceAssetReferencesFromDataDir } from '../../src/internal/vxaceAssetReferencesNode';
 
 describe('collectVxAceAssetReferences', () => {
-  test('collects database, map, event command, move route, and default system assets', () => {
-    const result = collectVxAceAssetReferences({
-      'System.rvdata2': object('RPG::System', {
-        '@sounds': array([audio('RPG::SE', 'Cursor1')]),
-        '@title_bgm': audio('RPG::BGM', 'TitleTheme.wma'),
-        '@battle_bgm': audio('RPG::BGM', 'BattleTheme'),
-        '@battle_end_me': audio('RPG::ME', 'BattleEnd'),
-        '@gameover_me': audio('RPG::ME', 'GameOver'),
-        '@boat': vehicle('Boat', audio('RPG::BGM', 'BoatBgm')),
-        '@ship': vehicle('Ship', audio('RPG::BGM', 'ShipBgm')),
-        '@airship': vehicle('Airship', audio('RPG::BGM', 'AirshipBgm')),
-        '@title1_name': 'TitleA',
-        '@title2_name': 'TitleB',
-        '@battleback1_name': 'Grassland',
-        '@battleback2_name': 'Clouds',
-        '@battler_name': 'ActorBattler',
-      }),
-      'Actors.rvdata2': array([
-        null,
-        object('RPG::Actor', {
-          '@character_name': 'Hero.png',
-          '@face_name': 'Actor1',
+  test('collects database, map, event command, move route, and default system assets', async () => {
+    const result = await collectVxAceAssetReferencesWithRuntime({
+      dataFiles: {
+        'System.rvdata2': object('RPG::System', {
+          '@sounds': array([audio('RPG::SE', 'Cursor1')]),
+          '@title_bgm': audio('RPG::BGM', 'TitleTheme.wma'),
+          '@battle_bgm': audio('RPG::BGM', 'BattleTheme'),
+          '@battle_end_me': audio('RPG::ME', 'BattleEnd'),
+          '@gameover_me': audio('RPG::ME', 'GameOver'),
+          '@boat': vehicle('Boat', audio('RPG::BGM', 'BoatBgm')),
+          '@ship': vehicle('Ship', audio('RPG::BGM', 'ShipBgm')),
+          '@airship': vehicle('Airship', audio('RPG::BGM', 'AirshipBgm')),
+          '@title1_name': 'TitleA',
+          '@title2_name': 'TitleB',
+          '@battleback1_name': 'Grassland',
+          '@battleback2_name': 'Clouds',
+          '@battler_name': 'ActorBattler',
         }),
-      ]),
-      'Enemies.rvdata2': array([object('RPG::Enemy', { '@battler_name': 'Slime' })]),
-      'Tilesets.rvdata2': array([
-        object('RPG::Tileset', {
-          '@tileset_names': array(['', 'Outside_A1.png', 'Outside_B']),
-        }),
-      ]),
-      'Animations.rvdata2': array([
-        object('RPG::Animation', {
-          '@animation1_name': 'Slash',
-          '@animation2_name': 'Impact',
-          '@timings': array([object('RPG::Animation::Timing', { '@se': audio('RPG::SE', 'Slash1') })]),
-        }),
-      ]),
-      'CommonEvents.rvdata2': array([
-        object('RPG::CommonEvent', {
-          '@list': array([
-            eventCommand(101, ['MessageFace']),
-            eventCommand(132, [audio('RPG::BGM', 'ChangedBattle')]),
-            eventCommand(133, [audio('RPG::ME', 'ChangedVictory')]),
-            eventCommand(139, [0, audio('RPG::ME', 'BattleMusicEvent')]),
-            eventCommand(205, [0, moveRoute([moveCommand(44, [audio('RPG::SE', 'RouteStep')])])]),
-            eventCommand(231, [1, 'Picture1']),
-            eventCommand(241, [audio('RPG::BGM', 'MapBgmEvent')]),
-            eventCommand(245, [audio('RPG::BGS', 'RiverEvent')]),
-            eventCommand(249, [audio('RPG::ME', 'JingleEvent')]),
-            eventCommand(250, [audio('RPG::SE', 'DecisionEvent')]),
-            eventCommand(261, ['Opening.mp4']),
-            eventCommand(283, ['EventBattleback1', 'EventBattleback2']),
-            eventCommand(284, ['EventParallax']),
-            eventCommand(285, ['NotAnAsset']),
-            eventCommand(322, [1, 'ChangedCharacter', 0, 'ChangedFace']),
-          ]),
-        }),
-      ]),
-      'Troops.rvdata2': array([
-        object('RPG::Troop', {
-          '@pages': array([
-            object('RPG::Troop::Page', {
-              '@list': array([eventCommand(250, [audio('RPG::SE', 'TroopSe')])]),
-            }),
-          ]),
-        }),
-      ]),
-      'Map001.rvdata2': object('RPG::Map', {
-        '@battleback1_name': 'MapBattleback1',
-        '@battleback2_name': 'MapBattleback2',
-        '@parallax_name': 'MapParallax',
-        '@bgm': audio('RPG::BGM', 'MapBgm'),
-        '@bgs': audio('RPG::BGS', 'MapBgs'),
-        '@events': hash([
-          [
-            1,
-            object('RPG::Event', {
-              '@pages': array([
-                object('RPG::Event::Page', {
-                  '@graphic': object('RPG::Event::Page::Graphic', {
-                    '@character_name': 'MapCharacter',
-                  }),
-                  '@list': array([eventCommand(101, ['MapFace'])]),
-                  '@move_route': moveRoute([moveCommand(44, [audio('RPG::SE', 'PageMoveSe')])]),
-                }),
-              ]),
-            }),
-          ],
+        'Actors.rvdata2': array([
+          null,
+          object('RPG::Actor', {
+            '@character_name': 'Hero.png',
+            '@face_name': 'Actor1',
+          }),
         ]),
-      }),
-      'Scripts.rvdata2': array([
-        array([
-          1,
-          'Asset literals',
-          bytes(
-            deflateSync(`\
+        'Enemies.rvdata2': array([object('RPG::Enemy', { '@battler_name': 'Slime' })]),
+        'Tilesets.rvdata2': array([
+          object('RPG::Tileset', {
+            '@tileset_names': array(['', 'Outside_A1.png', 'Outside_B']),
+          }),
+        ]),
+        'Animations.rvdata2': array([
+          object('RPG::Animation', {
+            '@animation1_name': 'Slash',
+            '@animation2_name': 'Impact',
+            '@timings': array([object('RPG::Animation::Timing', { '@se': audio('RPG::SE', 'Slash1') })]),
+          }),
+        ]),
+        'CommonEvents.rvdata2': array([
+          object('RPG::CommonEvent', {
+            '@list': array([
+              eventCommand(101, ['MessageFace']),
+              eventCommand(132, [audio('RPG::BGM', 'ChangedBattle')]),
+              eventCommand(133, [audio('RPG::ME', 'ChangedVictory')]),
+              eventCommand(139, [0, audio('RPG::ME', 'BattleMusicEvent')]),
+              eventCommand(205, [0, moveRoute([moveCommand(44, [audio('RPG::SE', 'RouteStep')])])]),
+              eventCommand(231, [1, 'Picture1']),
+              eventCommand(241, [audio('RPG::BGM', 'MapBgmEvent')]),
+              eventCommand(245, [audio('RPG::BGS', 'RiverEvent')]),
+              eventCommand(249, [audio('RPG::ME', 'JingleEvent')]),
+              eventCommand(250, [audio('RPG::SE', 'DecisionEvent')]),
+              eventCommand(261, ['Opening.mp4']),
+              eventCommand(283, ['EventBattleback1', 'EventBattleback2']),
+              eventCommand(284, ['EventParallax']),
+              eventCommand(285, ['NotAnAsset']),
+              eventCommand(322, [1, 'ChangedCharacter', 0, 'ChangedFace']),
+            ]),
+          }),
+        ]),
+        'Troops.rvdata2': array([
+          object('RPG::Troop', {
+            '@pages': array([
+              object('RPG::Troop::Page', {
+                '@list': array([eventCommand(250, [audio('RPG::SE', 'TroopSe')])]),
+              }),
+            ]),
+          }),
+        ]),
+        'Map001.rvdata2': object('RPG::Map', {
+          '@battleback1_name': 'MapBattleback1',
+          '@battleback2_name': 'MapBattleback2',
+          '@parallax_name': 'MapParallax',
+          '@bgm': audio('RPG::BGM', 'MapBgm'),
+          '@bgs': audio('RPG::BGS', 'MapBgs'),
+          '@events': hash([
+            [
+              1,
+              object('RPG::Event', {
+                '@pages': array([
+                  object('RPG::Event::Page', {
+                    '@graphic': object('RPG::Event::Page::Graphic', {
+                      '@character_name': 'MapCharacter',
+                    }),
+                    '@list': array([eventCommand(101, ['MapFace'])]),
+                    '@move_route': moveRoute([moveCommand(44, [audio('RPG::SE', 'PageMoveSe')])]),
+                  }),
+                ]),
+              }),
+            ],
+          ]),
+        }),
+        'Scripts.rvdata2': array([
+          array([
+            1,
+            'Asset literals',
+            bytes(
+              deflateSync(`\
 Cache.character("ScriptHero")
 Cache.picture("ScriptPicture", 0)
 Cache.picture("CG_" + $game_variables[1].to_s)
@@ -120,9 +122,11 @@ RPG::SE.new("ScriptDecision.wma")
 Audio.bgm_play("Audio/BGM/ScriptBattle")
 Audio.se_play("Audio/SE/" + name)
 `),
-          ),
+            ),
+          ]),
         ]),
-      ]),
+      },
+      runtime: nodeRuntime,
     });
 
     expect(result.warnings).toEqual([]);

@@ -1,5 +1,5 @@
-import { extname as posixExtname } from 'node:path/posix';
 import { ResourceType } from '@rutan/rpgmaker-vxace-web-game-manifest';
+import { posixExtname } from './pathUtils';
 import { toPosix } from './utils';
 
 export const IMAGE_EXTENSIONS = new Set(['.png', '.bmp', '.jpg', '.jpeg']);

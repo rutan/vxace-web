@@ -1,6 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { inflateSync } from 'node:zlib';
+import { ConversionRuntime, ConversionSource } from './environment';
 import {
   getRubyIvar,
   isRubyArray,
@@ -70,24 +68,32 @@ const AUDIO_CLASS_FOLDERS: Readonly<Record<string, string>> = {
   'RPG::SE': 'SE',
 };
 
-export const collectVxAceAssetReferencesFromDataDir = async (dataDir: string): Promise<VxAceAssetReferenceResult> => {
+export const collectVxAceAssetReferencesFromSource = async (options: {
+  source: ConversionSource;
+  sourceFiles: string[];
+  runtime: ConversionRuntime;
+}): Promise<VxAceAssetReferenceResult> => {
+  const { runtime, source, sourceFiles } = options;
   const warnings: VxAceAssetReferenceWarning[] = [];
   const dataFiles = new Map<string, RubyMarshalValue>();
 
   for (const filename of DATABASE_FILENAMES) {
-    const value = await readDataFile(dataDir, filename, warnings);
+    const value = await readDataFileFromSource(source, filename, warnings);
     if (value !== undefined) dataFiles.set(filename, value);
   }
 
-  for (const filename of await readMapFilenames(dataDir, warnings)) {
-    const value = await readDataFile(dataDir, filename, warnings);
+  for (const filename of readMapFilenamesFromSourceFiles(sourceFiles)) {
+    const value = await readDataFileFromSource(source, filename, warnings);
     if (value !== undefined) dataFiles.set(filename, value);
   }
 
-  const scripts = await readOptionalScriptsDataFile(dataDir, warnings);
+  const scripts = await readOptionalScriptsDataFileFromSource(source, warnings);
   if (scripts !== undefined) dataFiles.set(SCRIPTS_FILENAME, scripts);
 
-  const result = collectVxAceAssetReferences(dataFiles);
+  const result = await collectVxAceAssetReferencesWithRuntime({
+    dataFiles,
+    runtime,
+  });
   return {
     references: result.references,
     warnings: [...warnings, ...result.warnings],
@@ -111,29 +117,49 @@ export const collectVxAceScriptLiteralAssetReferences = (scriptText: string): st
 };
 
 export const collectVxAceAssetReferences = (dataFiles: VxAceDataFiles): VxAceAssetReferenceResult => {
-  const collector = new VxAceAssetReferenceCollector(dataFiles);
+  const collector = new VxAceAssetReferenceCollector(dataFiles, []);
   return collector.collect();
 };
 
-const readDataFile = async (
-  dataDir: string,
+export const collectVxAceAssetReferencesWithRuntime = async (options: {
+  dataFiles: VxAceDataFiles;
+  runtime: ConversionRuntime;
+}): Promise<VxAceAssetReferenceResult> => {
+  const { dataFiles, runtime } = options;
+  const warnings: VxAceAssetReferenceWarning[] = [];
+  const scriptTexts = await readScriptTexts({
+    scripts: dataFileValue(dataFiles, SCRIPTS_FILENAME),
+    runtime,
+    warnings,
+  });
+  const collector = new VxAceAssetReferenceCollector(dataFiles, scriptTexts);
+  const result = collector.collect();
+
+  return {
+    references: result.references,
+    warnings: [...warnings, ...result.warnings],
+  };
+};
+
+const readDataFileFromSource = async (
+  source: ConversionSource,
   filename: string,
   warnings: VxAceAssetReferenceWarning[],
 ): Promise<RubyMarshalValue | undefined> => {
-  const absolutePath = join(dataDir, filename);
+  const relativePath = `Data/${filename}`;
+
+  if (!(await source.fileExists(relativePath))) {
+    warnings.push({
+      code: 'missing-data-file',
+      file: filename,
+      message: `VX Ace data file was not found: ${filename}`,
+    });
+    return undefined;
+  }
 
   try {
-    return parseRubyMarshal(await readFile(absolutePath));
+    return parseRubyMarshal(await source.readFile(relativePath));
   } catch (error) {
-    if (isNodeError(error) && error.code === 'ENOENT') {
-      warnings.push({
-        code: 'missing-data-file',
-        file: filename,
-        message: `VX Ace data file was not found: ${filename}`,
-      });
-      return undefined;
-    }
-
     warnings.push({
       code: 'invalid-rvdata2',
       file: filename,
@@ -143,17 +169,16 @@ const readDataFile = async (
   }
 };
 
-const readOptionalScriptsDataFile = async (
-  dataDir: string,
+const readOptionalScriptsDataFileFromSource = async (
+  source: ConversionSource,
   warnings: VxAceAssetReferenceWarning[],
 ): Promise<RubyMarshalValue | undefined> => {
-  const absolutePath = join(dataDir, SCRIPTS_FILENAME);
+  const relativePath = `Data/${SCRIPTS_FILENAME}`;
 
+  if (!(await source.fileExists(relativePath))) return undefined;
   try {
-    return parseRubyMarshal(await readFile(absolutePath), { stringMode: 'bytes' });
+    return parseRubyMarshal(await source.readFile(relativePath), { stringMode: 'bytes' });
   } catch (error) {
-    if (isNodeError(error) && error.code === 'ENOENT') return undefined;
-
     warnings.push({
       code: 'invalid-rvdata2',
       file: SCRIPTS_FILENAME,
@@ -163,25 +188,73 @@ const readOptionalScriptsDataFile = async (
   }
 };
 
-const readMapFilenames = async (dataDir: string, warnings: VxAceAssetReferenceWarning[]): Promise<string[]> => {
-  try {
-    return (await readdir(dataDir))
-      .filter((filename) => MAP_FILENAME_PATTERN.test(filename))
-      .sort((left, right) => left.localeCompare(right));
-  } catch (error) {
+const readMapFilenamesFromSourceFiles = (sourceFiles: string[]) => {
+  return sourceFiles
+    .map((file) => {
+      const match = /^Data\/(Map\d{3}\.rvdata2)$/i.exec(file);
+      return match?.[1] ?? null;
+    })
+    .filter((filename): filename is string => filename !== null && MAP_FILENAME_PATTERN.test(filename))
+    .sort((left, right) => left.localeCompare(right));
+};
+
+const readScriptTexts = async (options: {
+  scripts: RubyMarshalValue | undefined;
+  runtime: ConversionRuntime;
+  warnings: VxAceAssetReferenceWarning[];
+}) => {
+  const { runtime, scripts, warnings } = options;
+  if (scripts === undefined) return [];
+
+  if (!isRubyArray(scripts)) {
     warnings.push({
-      code: 'invalid-data-directory',
-      message: `failed to read VX Ace data directory ${dataDir}: ${errorMessage(error)}`,
+      code: 'unexpected-data-shape',
+      file: SCRIPTS_FILENAME,
+      message: `unexpected VX Ace data shape in ${SCRIPTS_FILENAME}: expected array, got ${rubyValueType(scripts)}`,
     });
     return [];
   }
+
+  const scriptTexts: string[] = [];
+  for (const entry of scripts.items) {
+    const scriptEntry = rubyArrayItems(entry);
+    const compressed = scriptEntry[2];
+    if (compressed === undefined) continue;
+
+    const bytes = rubyBytes(compressed);
+    if (!bytes) {
+      warnings.push({
+        code: 'unexpected-data-shape',
+        file: SCRIPTS_FILENAME,
+        message: `unexpected VX Ace script entry shape in ${SCRIPTS_FILENAME}: expected compressed bytes, got ${rubyValueType(
+          compressed,
+        )}`,
+      });
+      continue;
+    }
+
+    try {
+      scriptTexts.push(new TextDecoder().decode(await runtime.inflate(bytes.bytes)));
+    } catch (error) {
+      warnings.push({
+        code: 'invalid-script-body',
+        file: SCRIPTS_FILENAME,
+        message: `failed to inflate VX Ace script body: ${errorMessage(error)}`,
+      });
+    }
+  }
+
+  return scriptTexts;
 };
 
 class VxAceAssetReferenceCollector {
   private readonly references = new Set<string>();
   private readonly warnings: VxAceAssetReferenceWarning[] = [];
 
-  constructor(private readonly dataFiles: VxAceDataFiles) {}
+  constructor(
+    private readonly dataFiles: VxAceDataFiles,
+    private readonly scriptTexts: string[],
+  ) {}
 
   collect(): VxAceAssetReferenceResult {
     this.collectDefaultScriptAssets();
@@ -320,43 +393,7 @@ class VxAceAssetReferenceCollector {
   }
 
   private collectScriptLiteralAssets() {
-    const scripts = this.data(SCRIPTS_FILENAME);
-    if (scripts === undefined) return;
-
-    if (!isRubyArray(scripts)) {
-      this.warnUnexpectedDataShape(SCRIPTS_FILENAME, 'array', scripts);
-      return;
-    }
-
-    for (const entry of scripts.items) {
-      const scriptEntry = rubyArrayItems(entry);
-      const compressed = scriptEntry[2];
-      if (compressed === undefined) continue;
-
-      const bytes = rubyBytes(compressed);
-      if (!bytes) {
-        this.warnings.push({
-          code: 'unexpected-data-shape',
-          file: SCRIPTS_FILENAME,
-          message: `unexpected VX Ace script entry shape in ${SCRIPTS_FILENAME}: expected compressed bytes, got ${rubyValueType(
-            compressed,
-          )}`,
-        });
-        continue;
-      }
-
-      let scriptText: string;
-      try {
-        scriptText = inflateSync(bytes.bytes).toString('utf8');
-      } catch (error) {
-        this.warnings.push({
-          code: 'invalid-script-body',
-          file: SCRIPTS_FILENAME,
-          message: `failed to inflate VX Ace script body: ${errorMessage(error)}`,
-        });
-        continue;
-      }
-
+    for (const scriptText of this.scriptTexts) {
       for (const reference of collectVxAceScriptLiteralAssetReferences(scriptText)) {
         this.add(reference);
       }
@@ -591,10 +628,6 @@ const dataFileValue = (dataFiles: VxAceDataFiles, filename: string) => {
 
 const isDataFileMap = (dataFiles: VxAceDataFiles): dataFiles is ReadonlyMap<string, RubyMarshalValue> => {
   return dataFiles instanceof Map;
-};
-
-const isNodeError = (error: unknown): error is NodeJS.ErrnoException => {
-  return error instanceof Error && 'code' in error;
 };
 
 const errorMessage = (error: unknown) => {

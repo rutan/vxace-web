@@ -31,13 +31,17 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.mts",
+      "import": "./dist/browser.mjs"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown src/index.ts",
+    "build": "tsdown src/index.ts src/browser.ts",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint src tests --type-aware",
     "lint:ts": "tsgo --noEmit",

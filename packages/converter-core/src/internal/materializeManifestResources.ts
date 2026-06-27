@@ -1,12 +1,9 @@
-import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { extname as posixExtname, parse as posixParse } from 'node:path/posix';
 import { ManifestResourceData, ResourceType } from '@rutan/rpgmaker-vxace-web-game-manifest';
 import { ConverterWarning } from '../types';
 import { SAFE_ASSET_DIRNAME, SAFE_ASSET_HASH_PREFIX_LENGTH } from './constants';
 import { ConversionContext } from './context';
 import { materializePackedResourceData, shouldPackResource } from './packBuilder';
+import { posixExtname, posixParse } from './pathUtils';
 import { detectResourceType, FONT_EXTENSIONS } from './resourceType';
 import { stripExtension, toPosix } from './utils';
 
@@ -47,7 +44,8 @@ const materializeManifestResource = async (
 
   if (shouldPackResource(context.packAssets, resourceType)) {
     const packed = await materializePackedResourceData(context.packBuilder, {
-      srcDir: context.srcDir,
+      source: context.source,
+      runtime: context.runtime,
       relativePath,
       resourceType,
       extension,
@@ -110,9 +108,8 @@ const materializeResourcePath = async (
 ) => {
   if (relativePath === 'Game.ini') return relativePath;
 
-  const absolutePath = join(context.srcDir, relativePath);
-  const content = await readFile(absolutePath);
-  const digest = createHash('sha256').update(relativePath.normalize('NFC')).update('\0').update(content).digest('hex');
+  const content = await context.source.readFile(relativePath);
+  const digest = await context.runtime.sha256Hex([relativePath.normalize('NFC'), '\0', content]);
   const suffix = extension ? `.${extension}` : '';
 
   for (let length = SAFE_ASSET_HASH_PREFIX_LENGTH; length <= digest.length; length += 4) {

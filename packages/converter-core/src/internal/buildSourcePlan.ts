@@ -1,9 +1,8 @@
-import { join } from 'node:path';
 import { ConverterWarning, ExcludeSourceFilesOptions, OmitUnusedAssetsOptions } from '../types';
 import { ConversionContext } from './context';
 import { detectResourceType } from './resourceType';
 import { stripExtension, toPosix } from './utils';
-import { collectVxAceAssetReferencesFromDataDir } from './vxaceAssetReferences';
+import { collectVxAceAssetReferencesFromSource } from './vxaceAssetReferences';
 
 export interface SourceFileOmissionReport {
   omittedFiles: string[];
@@ -116,7 +115,11 @@ const buildUnusedAssetReport = async (
     bucket.sort((left, right) => left.localeCompare(right));
   }
 
-  const collected = await collectVxAceAssetReferencesFromDataDir(join(context.srcDir, 'Data'));
+  const collected = await collectVxAceAssetReferencesFromSource({
+    source: context.source,
+    sourceFiles,
+    runtime: context.runtime,
+  });
   for (const warning of collected.warnings) {
     warnings.push({
       code: 'asset-reference-collection-warning',
