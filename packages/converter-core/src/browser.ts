@@ -154,7 +154,7 @@ const buildSourceFileList = (paths: string[]): SourceFileList => {
     }
 
     if (
-      path === MANIFEST_FILENAME ||
+      isGeneratedManifestFile(path) ||
       isExcludedSourceFilename(posixBasename(path)) ||
       isExcludedSourceExtension(posixExtname(path))
     ) {
@@ -174,6 +174,10 @@ const buildSourceFileList = (paths: string[]): SourceFileList => {
 const isExcludedSourceExtension = (extension: string) => {
   const normalized = extension.toLowerCase();
   return normalized === '.dll' || normalized === '.exe' || normalized === '.rgss3a' || normalized === '.rvproj2';
+};
+
+const isGeneratedManifestFile = (path: string) => {
+  return path.toLowerCase() === MANIFEST_FILENAME;
 };
 
 const isExcludedSourceFilename = (filename: string) => {

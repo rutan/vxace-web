@@ -83,8 +83,8 @@ export const collectVxAceAssetReferencesFromSource = async (options: {
   }
 
   for (const filename of readMapFilenamesFromSourceFiles(sourceFiles)) {
-    const value = await readDataFileFromSource(source, filename, warnings);
-    if (value !== undefined) dataFiles.set(filename, value);
+    const value = await readDataFileFromSource(source, filename.canonicalFilename, warnings, filename.sourceFilename);
+    if (value !== undefined) dataFiles.set(filename.canonicalFilename, value);
   }
 
   const scripts = await readOptionalScriptsDataFileFromSource(source, warnings);
@@ -145,8 +145,9 @@ const readDataFileFromSource = async (
   source: ConversionSource,
   filename: string,
   warnings: VxAceAssetReferenceWarning[],
+  sourceFilename = filename,
 ): Promise<RubyMarshalValue | undefined> => {
-  const relativePath = `Data/${filename}`;
+  const relativePath = `Data/${sourceFilename}`;
 
   if (!(await source.fileExists(relativePath))) {
     warnings.push({
@@ -192,10 +193,24 @@ const readMapFilenamesFromSourceFiles = (sourceFiles: string[]) => {
   return sourceFiles
     .map((file) => {
       const match = /^Data\/(Map\d{3}\.rvdata2)$/i.exec(file);
-      return match?.[1] ?? null;
+      if (!match) return null;
+
+      const mapId = /^map(\d{3})\.rvdata2$/i.exec(match[1]);
+      if (!mapId) return null;
+      const id = mapId[1];
+      if (id === undefined) return null;
+
+      return {
+        sourceFilename: match[1],
+        canonicalFilename: `Map${id}.rvdata2`,
+      };
     })
-    .filter((filename): filename is string => filename !== null && MAP_FILENAME_PATTERN.test(filename))
-    .sort((left, right) => left.localeCompare(right));
+    .filter((filename): filename is { sourceFilename: string; canonicalFilename: string } => filename !== null)
+    .sort(
+      (left, right) =>
+        left.canonicalFilename.localeCompare(right.canonicalFilename) ||
+        left.sourceFilename.localeCompare(right.sourceFilename),
+    );
 };
 
 const readScriptTexts = async (options: {

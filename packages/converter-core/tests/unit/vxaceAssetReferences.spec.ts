@@ -10,6 +10,7 @@ import type {
   RubyMarshalValue,
 } from '../../src/internal/rubyMarshal';
 import {
+  collectVxAceAssetReferencesFromSource,
   collectVxAceAssetReferencesWithRuntime,
   collectVxAceScriptLiteralAssetReferences,
 } from '../../src/internal/vxaceAssetReferences';
@@ -280,6 +281,51 @@ describe('collectVxAceAssetReferencesFromDataDir', () => {
     );
   });
 });
+
+describe('collectVxAceAssetReferencesFromSource', () => {
+  test('collects map assets from case-insensitive browser source filenames', async () => {
+    const result = await collectVxAceAssetReferencesFromSource({
+      source: {
+        async listFiles() {
+          return {
+            files: ['Data/map001.rvdata2'],
+            ignoredFiles: [],
+          };
+        },
+        async readFile(relativePath) {
+          const content = files.get(relativePath);
+          if (!content) throw new Error(`missing fixture file: ${relativePath}`);
+          return content;
+        },
+        async fileExists(relativePath) {
+          return files.has(relativePath);
+        },
+      },
+      sourceFiles: ['Data/map001.rvdata2'],
+      runtime: nodeRuntime,
+    });
+
+    expect(result.references).toEqual(
+      expect.arrayContaining(['Graphics/Battlebacks1/LowercaseBattleback', 'Graphics/Parallaxes/LowercaseParallax']),
+    );
+    expect(result.warnings).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'missing-data-file', file: 'Map001.rvdata2' })]),
+    );
+  });
+});
+
+const files = new Map([
+  [
+    'Data/map001.rvdata2',
+    fromBase64(
+      'BAhvOg1SUEc6Ok1hcAs6FkBiYXR0bGViYWNrMV9uYW1lSSIYTG93ZXJjYXNlQmF0dGxlYmFjawY6BkVUOhZAYmF0dGxlYmFjazJfbmFtZUkiAAY7B1Q6E0BwYXJhbGxheF9uYW1lSSIWTG93ZXJjYXNlUGFyYWxsYXgGOwdUOglAYmdtMDoJQGJnczA6DEBldmVudHN7AA==',
+    ),
+  ],
+]);
+
+function fromBase64(value: string) {
+  return Uint8Array.from(Buffer.from(value, 'base64'));
+}
 
 const object = (className: string, ivars: Record<string, RubyMarshalValue>): RubyMarshalObject => {
   return {

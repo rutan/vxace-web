@@ -17,6 +17,19 @@ describe('browser converter', () => {
     });
   });
 
+  test('excludes generated manifest regardless of browser input casing', async () => {
+    const source = createBrowserFileSource([
+      inputFile('Game.ini', '[Game]\nTitle=Fixture\n'),
+      inputFile('Graphics/Characters/Hero.png', 'hero image'),
+      inputFile('Manifest.json', '{}'),
+    ]);
+
+    await expect(source.listFiles()).resolves.toEqual({
+      files: ['Game.ini', 'Graphics/Characters/Hero.png'],
+      ignoredFiles: ['Manifest.json'],
+    });
+  });
+
   test('does not materialize generated converter output into the browser conversion result', async () => {
     const result = await convertGameInBrowser({
       files: [

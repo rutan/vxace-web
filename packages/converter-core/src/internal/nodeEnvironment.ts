@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { inflateSync } from 'node:zlib';
 import { ConversionOutput, ConversionRuntime, ConversionSource } from './environment';
@@ -24,10 +24,10 @@ export const createNodeSource = (rootDir: string): ConversionSource => ({
   readFile: (relativePath) => readFile(join(rootDir, relativePath)),
   async fileExists(relativePath) {
     try {
-      await readFile(join(rootDir, relativePath));
-      return true;
-    } catch {
-      return false;
+      return (await stat(join(rootDir, relativePath))).isFile();
+    } catch (error) {
+      if (isNodeError(error) && error.code === 'ENOENT') return false;
+      throw error;
     }
   },
 });
@@ -42,3 +42,7 @@ export const createNodeOutput = (rootDir: string): ConversionOutput => ({
     await rm(join(rootDir, relativePath), { recursive: true, force: true });
   },
 });
+
+const isNodeError = (error: unknown): error is NodeJS.ErrnoException => {
+  return error instanceof Error && 'code' in error;
+};
