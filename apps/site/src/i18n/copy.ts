@@ -276,6 +276,11 @@ export const siteCopy = {
             {
               feature: 'Maps and events',
               status: 'Works',
+              notes: [
+                {
+                  before: 'Movie playback commands are not supported.',
+                },
+              ],
             },
             {
               feature: 'Battle',
@@ -293,8 +298,13 @@ export const siteCopy = {
               ],
             },
             {
-              feature: 'Encrypted archives',
+              feature: 'Encrypted archives (.rgss3a)',
               status: 'Not supported',
+              notes: [
+                {
+                  before: 'Due to licensing issues, there are no plans to support this.',
+                },
+              ],
             },
             {
               feature: 'File name handling',
@@ -552,6 +562,11 @@ export const siteCopy = {
             {
               feature: 'マップ・イベント',
               status: '動作します',
+              notes: [
+                {
+                  before: 'ムービーの再生コマンドは非対応です',
+                },
+              ],
             },
             {
               feature: '戦闘',
@@ -568,8 +583,13 @@ export const siteCopy = {
               ],
             },
             {
-              feature: '暗号化アーカイブ',
+              feature: '暗号化アーカイブ (.rgss3a)',
               status: '非対応',
+              notes: [
+                {
+                  before: 'ライセンスの関係上、対応予定はありません',
+                },
+              ],
             },
             {
               feature: 'ファイル名の扱い',
