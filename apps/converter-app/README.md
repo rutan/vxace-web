@@ -1,6 +1,6 @@
 # rpgmaker-vxace-web-converter-app
 
-Desktop converter application for RPG Maker VX Ace Web.
+Desktop converter application for VX Ace Web Runtime.
 
 ## Overview
 

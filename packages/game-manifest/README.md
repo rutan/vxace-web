@@ -1,10 +1,10 @@
 # @rutan/rpgmaker-vxace-web-game-manifest
 
-Manifest schema and utilities for RPG Maker VX Ace Web.
+Manifest schema and utilities for VX Ace Web Runtime.
 
 ## Overview
 
-This package defines the game manifest format used by RPG Maker VX Ace Web and
+This package defines the game manifest format used by VX Ace Web Runtime and
 provides helpers for parsing, validating, cloning, and resolving manifest
 records.
 

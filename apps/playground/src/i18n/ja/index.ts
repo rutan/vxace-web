@@ -2,7 +2,7 @@ import type { Translation } from '../i18n-types.js';
 
 const ja = {
   app: {
-    title: 'RPGツクールVX Ace Web Playground',
+    title: 'VX Ace Web Runtime Playground',
   },
   header: {
     help: 'これは何？',
@@ -29,7 +29,7 @@ const ja = {
     overview: {
       title: '概要',
       paragraph1:
-        '『RPGツクールVX Ace Web Playground』は、自分が作成したRPGツクールVX Aceのプロジェクトをブラウザ上でお試し動作するためのツールです。',
+        '『VX Ace Web Runtime Playground』は、自分が作成したRPGツクールVX Aceのプロジェクトをブラウザ上でお試し動作するためのツールです。',
       paragraph2: 'ゲームデータはサーバーに送信されることなく、ブラウザ内でのみ処理されます。安心してお試しください。',
       paragraph3: '本ツールは非公式のものであり、株式会社Gotcha Gotcha Gamesとは一切関係ありません。',
     },

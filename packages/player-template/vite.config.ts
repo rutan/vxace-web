@@ -13,7 +13,7 @@ export default defineConfig(() => {
         output: {
           postBanner: `
 /*
- * RPG Maker VX Ace Web Runtime
+ * VX Ace Web Runtime
  * ------------------------------
  * See licenses of bundled dependencies at ../license.md
  */

@@ -1,7 +1,7 @@
 {
   "name": "@rutan/rpgmaker-vxace-web-game-manifest",
   "version": "0.0.0",
-  "description": "Manifest schema and utilities for RPG Maker VX Ace Web.",
+  "description": "Manifest schema and utilities for VX Ace Web Runtime.",
   "keywords": [
     "browser",
     "manifest",

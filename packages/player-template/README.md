@@ -1,6 +1,6 @@
 # @rutan/rpgmaker-vxace-web-player-template
 
-Browser player template and RGSS3-compatible runtime for RPG Maker VX Ace Web.
+Browser player template and RGSS3-compatible runtime for VX Ace Web Runtime.
 
 ## Overview
 

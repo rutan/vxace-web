@@ -2,7 +2,7 @@ import type { BaseTranslation } from '../i18n-types.js';
 
 const en = {
   app: {
-    title: 'RPG Maker VX Ace Web Playground',
+    title: 'VX Ace Web Runtime Playground',
   },
   header: {
     help: 'What is this?',
@@ -29,7 +29,7 @@ const en = {
     overview: {
       title: 'Overview',
       paragraph1:
-        'RPG Maker VX Ace Web Playground is a tool for trying your own RPG Maker VX Ace project directly in the browser.',
+        'VX Ace Web Runtime Playground is a tool for trying your own RPG Maker VX Ace project directly in the browser.',
       paragraph2: 'Game data is processed only inside your browser and is not uploaded to a server.',
       paragraph3: 'This tool is unofficial and is not affiliated with Gotcha Gotcha Games Inc.',
     },
