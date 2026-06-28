@@ -1,5 +1,16 @@
 # @rutan/rpgmaker-vxace-web-converter-core
 
+## 0.1.0
+
+### Minor Changes
+
+- [#12](https://github.com/rutan/vxace-web/pull/12) [`103d918`](https://github.com/rutan/vxace-web/commit/103d918bb6c1868ce8aefa5643283f69209b53c1) Thanks [@rutan](https://github.com/rutan)! - converter-core for browser
+
+### Patch Changes
+
+- Updated dependencies [[`a385671`](https://github.com/rutan/vxace-web/commit/a3856718ee6df1ecb75771df2b7190f6740b2264)]:
+  - @rutan/rpgmaker-vxace-web-player-template@0.0.2
+
 ## 0.0.1
 
 ### Patch Changes

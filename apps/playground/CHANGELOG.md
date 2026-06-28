@@ -1,5 +1,12 @@
 # rpgmaker-vxace-web-playground
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`a385671`](https://github.com/rutan/vxace-web/commit/a3856718ee6df1ecb75771df2b7190f6740b2264)]:
+  - @rutan/rpgmaker-vxace-web-player-template@0.0.2
+
 ## 0.1.1
 
 ### Patch Changes
