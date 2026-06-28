@@ -1,0 +1,17 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "$components": ["./src/components"],
+      "$i18n": ["./src/i18n"],
+      "$i18n/*": ["./src/i18n/*"],
+      "$layouts": ["./src/layouts"],
+      "$page-contents": ["./src/page-contents"],
+      "$page-contents/*": ["./src/page-contents/*"],
+      "$types": ["./src/types"]
+    }
+  },
+  "include": ["./src"],
+  "exclude": ["./build", "./dist", "./public"]
+}
