@@ -1,6 +1,6 @@
 {
   "name": "@rutan/rpgmaker-vxace-web-converter-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Core conversion library for packaging RPG Maker VX Ace games for the web.",
   "keywords": [
     "browser",
