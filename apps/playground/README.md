@@ -1,7 +1,7 @@
 # rpgmaker-vxace-web-playground
 
-Browser playground for trying RPG Maker VX Ace projects with RPG Maker VX Ace
-Web.
+Browser playground for trying RPG Maker VX Ace projects with VX Ace Web
+Runtime.
 
 ## Overview
 

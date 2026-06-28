@@ -205,7 +205,7 @@ type SiteCopy = {
 
 export const siteCopy = {
   en: {
-    brand: 'RPG Maker VX Ace Web',
+    brand: 'VX Ace Web Runtime',
     header: {
       menu: {
         open: 'Open menu',
@@ -227,24 +227,24 @@ export const siteCopy = {
     },
     landing: {
       page: {
-        title: 'RPG Maker VX Ace Web',
-        description: 'RPG Maker VX Ace Web is a project for playing RPG Maker VX Ace games in the browser.',
+        title: 'VX Ace Web Runtime',
+        description: 'VX Ace Web Runtime is an unofficial browser runtime for RPG Maker VX Ace games.',
       },
       hero: {
         heading: 'Run RPG Maker VX Ace games in the browser',
-        copy: 'RPG Maker VX Ace Web is an unofficial project that makes RPG Maker VX Ace games playable in the browser.',
+        copy: 'VX Ace Web Runtime is an unofficial project that makes RPG Maker VX Ace games playable in the browser.',
         converterAction: 'Convert in the browser',
         githubAction: 'GitHub',
       },
       demo: {
         heading: 'Demo',
         play: 'Play demo',
-        title: 'RPG Maker VX Ace Web demo',
+        title: 'VX Ace Web Runtime demo',
       },
       about: {
-        heading: 'About RPG Maker VX Ace Web',
+        heading: 'About VX Ace Web Runtime',
         paragraphs: [
-          'RPG Maker VX Ace Web is an unofficial project that makes RPG Maker VX Ace games playable in the browser.',
+          'VX Ace Web Runtime is an unofficial browser runtime for RPG Maker VX Ace games.',
           'The project provides a compatible runtime template for running RPG Maker VX Ace games in the browser, plus a public converter that packages games for that runtime.',
         ],
         unofficial: 'This project is not affiliated with Gotcha Gotcha Games, the developer of RPG Maker.',
@@ -266,7 +266,7 @@ export const siteCopy = {
       mechanism: {
         heading: 'How it works',
         paragraphs: [
-          'RPG Maker VX Ace Web uses Ruby.wasm and Pixi.js to build a compatible runtime that reproduces RGSS3 behavior.',
+          'VX Ace Web Runtime uses Ruby.wasm and Pixi.js to build a compatible runtime that reproduces RGSS3 behavior.',
           'There are some differences from RPG Maker VX Ace because of Ruby version differences and browser constraints, but the runtime is designed to support many games.',
           'Note: This project does not guarantee that all games will work. Due to the nature of the project, long play sessions or large games may be unstable.',
         ],
@@ -276,6 +276,11 @@ export const siteCopy = {
             {
               feature: 'Maps and events',
               status: 'Works',
+              notes: [
+                {
+                  before: 'Movie playback commands are not supported.',
+                },
+              ],
             },
             {
               feature: 'Battle',
@@ -293,8 +298,13 @@ export const siteCopy = {
               ],
             },
             {
-              feature: 'Encrypted archives',
+              feature: 'Encrypted archives (.rgss3a)',
               status: 'Not supported',
+              notes: [
+                {
+                  before: 'Due to licensing issues, there are no plans to support this.',
+                },
+              ],
             },
             {
               feature: 'File name handling',
@@ -352,7 +362,7 @@ export const siteCopy = {
     },
     converter: {
       page: {
-        title: 'Converter | RPG Maker VX Ace Web',
+        title: 'Converter | VX Ace Web Runtime',
         description: 'Convert a VX Ace project in the browser and generate a distribution ZIP.',
       },
       intro: {
@@ -481,7 +491,7 @@ export const siteCopy = {
     },
   },
   ja: {
-    brand: 'RPGツクール VX Ace Web',
+    brand: 'VX Ace Web Runtime',
     header: {
       menu: {
         open: 'メニューを開く',
@@ -503,25 +513,24 @@ export const siteCopy = {
     },
     landing: {
       page: {
-        title: 'RPGツクールVX Ace Web',
-        description:
-          'RPGツクールVX Ace Web は、RPGツクールVX Ace のゲームをブラウザ上でプレイできるようにするためのプロジェクトです。',
+        title: 'VX Ace Web Runtime',
+        description: 'VX Ace Web Runtime は、RPGツクールVX Ace製ゲーム向けの非公式ブラウザ実行環境です。',
       },
       hero: {
         heading: ['RPGツクール', 'VX Ace', 'の', 'ゲームを', 'ブラウザで動かす'],
-        copy: 'RPGツクールVX Ace Webは、RPGツクールVX Aceのゲームをブラウザ上でプレイできるようにする非公式プロジェクトです。',
+        copy: 'VX Ace Web Runtimeは、RPGツクールVX Aceのゲームをブラウザ上でプレイできるようにする非公式プロジェクトです。',
         converterAction: 'ゲームを変換する',
         githubAction: 'GitHub',
       },
       demo: {
         heading: 'デモ',
         play: 'デモをプレイ',
-        title: 'RPGツクールVX Ace Web デモ',
+        title: 'VX Ace Web Runtime デモ',
       },
       about: {
-        heading: 'RPGツクールVX Ace Webとは',
+        heading: 'VX Ace Web Runtimeとは',
         paragraphs: [
-          'RPGツクールVX Ace Webは、RPGツクールVX Aceのゲームをブラウザ上でプレイできるようにする非公式プロジェクトです。',
+          'VX Ace Web Runtimeは、RPGツクールVX Ace製ゲーム向けの非公式ブラウザ実行環境です。',
           'このプロジェクトでは、RPGツクールVX Aceのゲームをブラウザ上で動作させるための互換ランタイムテンプレートと、その互換ランタイムを利用した公開用のコンバーターを提供します。',
         ],
         unofficial: 'RPGツクールの開発元である Gotcha Gotcha Games 様とは一切関係のない非公式プロジェクトです。',
@@ -553,6 +562,11 @@ export const siteCopy = {
             {
               feature: 'マップ・イベント',
               status: '動作します',
+              notes: [
+                {
+                  before: 'ムービーの再生コマンドは非対応です',
+                },
+              ],
             },
             {
               feature: '戦闘',
@@ -569,8 +583,13 @@ export const siteCopy = {
               ],
             },
             {
-              feature: '暗号化アーカイブ',
+              feature: '暗号化アーカイブ (.rgss3a)',
               status: '非対応',
+              notes: [
+                {
+                  before: 'ライセンスの関係上、対応予定はありません',
+                },
+              ],
             },
             {
               feature: 'ファイル名の扱い',
@@ -628,7 +647,7 @@ export const siteCopy = {
     },
     converter: {
       page: {
-        title: '変換ツール | RPGツクールVX Ace Web',
+        title: '変換ツール | VX Ace Web Runtime',
         description: 'ブラウザ上で VX Ace プロジェクトを変換し、配布用 ZIP を生成します。',
       },
       intro: {

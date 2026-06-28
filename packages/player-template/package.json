@@ -1,7 +1,7 @@
 {
   "name": "@rutan/rpgmaker-vxace-web-player-template",
   "version": "0.0.2",
-  "description": "Browser player template and RGSS3-compatible runtime for RPG Maker VX Ace Web.",
+  "description": "Browser player template and RGSS3-compatible runtime for VX Ace Web Runtime.",
   "keywords": [
     "browser",
     "rgss3",

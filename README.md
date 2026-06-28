@@ -1,13 +1,15 @@
-# RPG Maker VX Ace Web
+# VX Ace Web Runtime
 
 | **English** | [日本語](./README.ja.md) |
 | ----------- | ------------------------ |
 
-RPG Maker VX Ace games in the browser.
+Run RPG Maker VX Ace games in the browser.
+
+https://rutan.github.io/vxace-web/
 
 ## Overview
 
-RPG Maker VX Ace Web is a development project for running games made with
+VX Ace Web Runtime is an unofficial browser runtime project for running games made with
 [RPG Maker VX Ace](https://rpgmakerofficial.com/product/products/rpgvxace/index/)
 in a web browser.
 

@@ -1,6 +1,6 @@
 # @rutan/rpgmaker-vxace-web-converter-cli
 
-Command-line converter for RPG Maker VX Ace Web.
+Command-line converter for VX Ace Web Runtime.
 
 ## Overview
 

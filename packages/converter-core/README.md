@@ -1,11 +1,11 @@
 # @rutan/rpgmaker-vxace-web-converter-core
 
-Core conversion library for RPG Maker VX Ace Web.
+Core conversion library for VX Ace Web Runtime.
 
 ## Overview
 
 This package provides the library API used to convert RPG Maker VX Ace games
-into browser-ready files for RPG Maker VX Ace Web.
+into browser-ready files for VX Ace Web Runtime.
 
 It can generate a game manifest, rewrite resource paths for browser delivery,
 copy the bundled player template, pack game resources, and optionally omit

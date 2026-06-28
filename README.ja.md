@@ -1,13 +1,15 @@
-# RPGツクールVX Ace Web
+# VX Ace Web Runtime
 
 | [English](./README.md) | **日本語** |
 | ---------------------- | ---------- |
 
-ブラウザでRPGツクールVX Aceのゲームを動かすためのプロジェクトです。
+RPGツクールVX Aceのゲームをブラウザで動かすための非公式ブラウザ実行環境です。
+
+https://rutan.github.io/vxace-web/ja/
 
 ## 概要
 
-RPGツクールVX Ace Webは、[RPGツクールVX Ace](https://rpgmakerofficial.com/product/products/rpgvxace/index/)で作成されたゲームをWebブラウザ上で動作させるための開発プロジェクトです。
+VX Ace Web Runtimeは、[RPGツクールVX Ace](https://rpgmakerofficial.com/product/products/rpgvxace/index/)で作成されたゲームをWebブラウザ上で動作させるための非公式ブラウザ実行環境です。
 
 本プロジェクトでは、RGSS3互換のブラウザランタイムと、ブラウザ向けにゲームパッケージを変換するツールを提供します。ランタイムは、ゲームごとにパッチを当てたりスクリプトを書き直したりすることなく、可能な限りオリジナルのゲームコードやデータをそのまま実行できるように設計されています。
 
