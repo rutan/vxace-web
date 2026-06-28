@@ -1,6 +1,6 @@
 {
   "name": "@rutan/rpgmaker-vxace-web-converter-cli",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Command-line converter for VX Ace Web Runtime.",
   "keywords": [
     "browser",
