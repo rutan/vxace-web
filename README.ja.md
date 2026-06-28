@@ -5,6 +5,8 @@
 
 RPGツクールVX Aceのゲームをブラウザで動かすための非公式ブラウザ実行環境です。
 
+https://rutan.github.io/vxace-web/ja/
+
 ## 概要
 
 VX Ace Web Runtimeは、[RPGツクールVX Ace](https://rpgmakerofficial.com/product/products/rpgvxace/index/)で作成されたゲームをWebブラウザ上で動作させるための非公式ブラウザ実行環境です。
